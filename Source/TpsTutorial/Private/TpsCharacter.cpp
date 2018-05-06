@@ -45,6 +45,10 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Bind forward and right input axis to the corresponding functions.
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATpsCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATpsCharacter::MoveRight);
+
+	// Bind camera input
+	PlayerInputComponent->BindAxis("Lookup", this, &ATpsCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ATpsCharacter::AddControllerYawInput);
 	// Then go to UE4 Project Settings -> Input -> axis mappings to create axis inputs.
 }
 
