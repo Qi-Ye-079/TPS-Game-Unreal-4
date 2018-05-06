@@ -1,0 +1,13 @@
+# Unreal 4 cache folders
+Intermediate/
+Saved/
+Binaries/
+Build/
+DerivedDataCache/
+
+# VS generated files
+*.suo
+*.VC.db
+*.opendb
+*.user
+*.ipch
