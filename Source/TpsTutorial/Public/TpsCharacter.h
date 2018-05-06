@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "TpsCharacter.generated.h"
 
+// Pre-declaration
+class UCameraComponent;
+
 UCLASS()
 class TPSTUTORIAL_API ATpsCharacter : public ACharacter
 {
@@ -22,6 +25,10 @@ protected:
 	// Bind axis inputs
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
+
+	// Main camera component
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UCameraComponent* CameraComp;
 
 public:	
 	// Called every frame
