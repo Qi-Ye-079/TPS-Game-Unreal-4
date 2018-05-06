@@ -4,6 +4,7 @@
 #include <Components/InputComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
+#include <GameFramework/PawnMovementComponent.h>
 #include "../Public/TpsCharacter.h"
 
 
@@ -34,7 +35,10 @@ ATpsCharacter::ATpsCharacter()
 void ATpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// Set the following to enable the character to crouch (??weired setting)
+	// And this doesn't work in the constructor. Must be in the BeginPlay (Bug??)
+	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
 void ATpsCharacter::MoveForward(float axisValue)
@@ -45,6 +49,16 @@ void ATpsCharacter::MoveForward(float axisValue)
 void ATpsCharacter::MoveRight(float axisValue)
 {
 	AddMovementInput(GetActorRightVector() * axisValue);
+}
+
+void ATpsCharacter::beginCrouch()
+{
+	Crouch(); // Built-in function
+}
+
+void ATpsCharacter::endCrouch()
+{
+	UnCrouch(); // Built-in function
 }
 
 // Called every frame
@@ -67,5 +81,9 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("Lookup", this, &ATpsCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Turn", this, &ATpsCharacter::AddControllerYawInput);
 	// Then go to UE4 Project Settings -> Input -> axis mappings to create axis inputs.
+
+	// Bind actions(NOTE: cannot directly use Crouch() and UnCrouch() function here. Why??)
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::beginCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::endCrouch);
 }
 

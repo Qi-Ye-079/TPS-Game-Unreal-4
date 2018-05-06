@@ -26,6 +26,9 @@ protected:
 	// Bind axis inputs
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
+	//BInd action
+	void beginCrouch();
+	void endCrouch();
 
 	// Main camera component
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
