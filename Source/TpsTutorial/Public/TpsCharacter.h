@@ -8,6 +8,7 @@
 
 // Pre-declaration
 class UCameraComponent;
+class USpringArmComponent;
 
 UCLASS()
 class TPSTUTORIAL_API ATpsCharacter : public ACharacter
@@ -30,6 +31,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	USpringArmComponent* SpringArmComp;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -37,6 +41,5 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
 	
 };

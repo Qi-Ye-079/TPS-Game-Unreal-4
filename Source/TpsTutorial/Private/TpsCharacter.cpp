@@ -3,6 +3,7 @@
 #include "TpsCharacter.h"
 #include <Components/InputComponent.h>
 #include <Camera/CameraComponent.h>
+#include <GameFramework/SpringArmComponent.h>
 #include "../Public/TpsCharacter.h"
 
 
@@ -12,10 +13,21 @@ ATpsCharacter::ATpsCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// When rotate the camera: don't rotate the character
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+
+	// Auto posses player 0
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+	// Create a Spring Arm Component
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComp->SetupAttachment(RootComponent); // Must-have
+	SpringArmComp->bUsePawnControlRotation = true; // Must-have
+
 	// Create a UCameraComponent for this player.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
-	CameraComp->bUsePawnControlRotation = true;
-
+	CameraComp->SetupAttachment(SpringArmComp);
 }
 
 // Called when the game starts or when spawned
