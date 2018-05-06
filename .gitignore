@@ -4,6 +4,8 @@ Saved/
 Binaries/
 Build/
 DerivedDataCache/
+Content/StarterContent/
+Content/AnimStarterPack/
 
 # VS generated files
 *.suo
