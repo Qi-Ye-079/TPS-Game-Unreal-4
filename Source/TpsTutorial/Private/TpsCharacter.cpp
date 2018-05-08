@@ -4,7 +4,8 @@
 #include <Components/InputComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
-#include <GameFramework/PawnMovementComponent.h>
+//#include <GameFramework/PawnMovementComponent.h>
+#include "GameFramework/CharacterMovementComponent.h"
 #include "../Public/TpsCharacter.h"
 
 
@@ -18,13 +19,21 @@ ATpsCharacter::ATpsCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 
+	// Set the following to enable the character to crouch (??weired setting)
+	UCharacterMovementComponent* CharMoveComp = GetCharacterMovement();
+	CharMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
+	CharMoveComp->bOrientRotationToMovement = true;
+
 	// Auto posses player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	// Create a Spring Arm Component
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
-	SpringArmComp->SetupAttachment(RootComponent); // Must-have
-	SpringArmComp->bUsePawnControlRotation = true; // Must-have
+	SpringArmComp->SetupAttachment(RootComponent);           // Must-have
+	SpringArmComp->bUsePawnControlRotation = true;           // Must-have
+	SpringArmComp->TargetArmLength = 250.f;                  // length of the spring arm
+	SpringArmComp->SocketOffset = FVector(0.f, 60.f, 40.f);  // Offset at the end of spring arm(socket)
+	//SpringArmComp->SetRelativeLocationAndRotation(FVector(15.f, 0.f, 0.f), FRotator(0.f, -60.f, 0.f));
 
 	// Create a UCameraComponent for this player.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
@@ -36,9 +45,6 @@ void ATpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Set the following to enable the character to crouch (??weired setting)
-	// And this doesn't work in the constructor. Must be in the BeginPlay (Bug??)
-	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
 void ATpsCharacter::MoveForward(float axisValue)
