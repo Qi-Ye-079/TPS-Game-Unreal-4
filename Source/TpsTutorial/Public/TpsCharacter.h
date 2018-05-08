@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<class ATpsWeapon> WeaponInstance;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
