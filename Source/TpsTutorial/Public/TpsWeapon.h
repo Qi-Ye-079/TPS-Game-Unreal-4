@@ -19,14 +19,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* MeshComp;
+	class USkeletalMeshComponent* MeshComp;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	//UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ShootProjectile();
+	void ShootProjectile(class UCameraComponent* CameraComp);
 	
 	
 };

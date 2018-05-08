@@ -1,9 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TpsWeapon.h"
+#include <Components/SkeletalMeshComponent.h>
 #include <CollisionQueryParams.h>
 #include <Engine/World.h>
 #include <DrawDebugHelpers.h>
+#include <Camera/CameraComponent.h>
+#include <GameFramework/SpringArmComponent.h>
 
 
 // Sets default values
@@ -24,18 +27,28 @@ void ATpsWeapon::BeginPlay()
 	
 }
 
-void ATpsWeapon::ShootProjectile()
+
+//************************************
+// Method:    ShootProjectile
+// FullName:  ATpsWeapon::ShootProjectile
+// Access:    public 
+// Returns:   void
+// Qualifier: 
+// Parameter: CameraComp - the pointer to the main camera of the owner pawn
+//************************************
+void ATpsWeapon::ShootProjectile(UCameraComponent* CameraComp)
 {
-	// First we need to line trace from the pawn eyes to the crosshair location (screen center)
+	// First we need to line trace from the view of camera
 	AActor* myOwner = GetOwner();
 	if (myOwner)
 	{
-		// Get the location and rotation of the eye view(from the camera)
+		// Get the location and rotation of from camera's view
 		FVector camLocation;
 		FRotator camRotation;
-		myOwner->GetActorEyesViewPoint(camLocation, camRotation);
-		// Get the end location of tracing line with distance 10000
-		FVector endLocation = camLocation + camRotation.Vector() * 10000.f;
+		CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, camLocation, camRotation);
+		// Get the end location of tracing line with a large distance
+		FVector& startLocation =  camLocation;
+		FVector  endLocation   =  camLocation + camRotation.Vector() * 10000.f;
 
 		// Better to specify the Collision Query Parameters as well
 		// Because it will get a precise hit point
@@ -45,16 +58,19 @@ void ATpsWeapon::ShootProjectile()
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
 
-		// The HitResult struct
-		FHitResult hit;
 		// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
-		if (GetWorld()->LineTraceSingleByChannel(hit, camLocation, endLocation, ECC_Visibility, QueryParams))
+		FHitResult hit; // The HitResult struct
+		if (GetWorld()->LineTraceSingleByChannel(hit, startLocation, endLocation, ECC_Visibility, QueryParams))
 		{
-			// If blocking hit happens
-		}
+			// If blocking hit happens: get the location of the weapon muzzle
+			FVector muzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
 
-		// Draw a debug line to help us visualize the tracing line
-		DrawDebugLine(GetWorld(), camLocation, endLocation, FColor::Red, false, 1.f, 0, 1.f);
+			// Then get the hit point
+			FVector hitLocation = hit.ImpactPoint;
+
+			// Draw a debug line to help visualize the tracing line
+			DrawDebugLine(GetWorld(), muzzleLocation, hitLocation, FColor::Red, false, 1.f, 0, 1.f);
+		}
 	}
 	
 }

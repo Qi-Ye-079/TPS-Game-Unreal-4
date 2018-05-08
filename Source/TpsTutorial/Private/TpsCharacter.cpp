@@ -118,7 +118,7 @@ void ATpsCharacter::endCrouch()
 
 void ATpsCharacter::Fire()
 {
-	currentWeapon->ShootProjectile();
+	currentWeapon->ShootProjectile(CameraComp);
 }
 
 // Called every frame
