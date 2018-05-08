@@ -23,6 +23,7 @@ ATpsCharacter::ATpsCharacter()
 	UCharacterMovementComponent* CharMoveComp = GetCharacterMovement();
 	CharMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
 	CharMoveComp->bOrientRotationToMovement = true;
+	CharMoveComp->MaxWalkSpeed = 450.f;
 
 	// Auto posses player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
