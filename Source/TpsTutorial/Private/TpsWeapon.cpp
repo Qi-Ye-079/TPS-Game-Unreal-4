@@ -7,6 +7,7 @@
 #include <DrawDebugHelpers.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
+#include <Kismet/GameplayStatics.h>
 
 
 // Sets default values
@@ -64,12 +65,15 @@ void ATpsWeapon::ShootProjectile(UCameraComponent* CameraComp)
 		{
 			// If blocking hit happens: get the location of the weapon muzzle
 			FVector muzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-
 			// Then get the hit point
 			FVector hitLocation = hit.ImpactPoint;
-
 			// Draw a debug line to help visualize the tracing line
 			DrawDebugLine(GetWorld(), muzzleLocation, hitLocation, FColor::Red, false, 1.f, 0, 1.f);
+
+			// Get the player controller who shot the weapon
+			AController* eventInstigator = GetOwner()->GetInstigatorController();
+			// Apply damage to the actor who is hit
+			UGameplayStatics::ApplyPointDamage(hit.GetActor(), 20.f, (hitLocation - muzzleLocation), hit, eventInstigator, this, DamageType);
 		}
 	}
 	
