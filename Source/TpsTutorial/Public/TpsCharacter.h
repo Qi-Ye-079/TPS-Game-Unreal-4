@@ -29,16 +29,22 @@ protected:
 	//BInd action
 	void beginCrouch();
 	void endCrouch();
+	void Fire();
 
 	// Main camera component
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
 
+	// Spring Arm component
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
+	// The weapon class to spawn the weapon
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class ATpsWeapon> WeaponInstance;
+	TSubclassOf<class ATpsWeapon> WeaponClass;
+
+	// The spawned weapon instance
+	ATpsWeapon* currentWeapon;
 
 public:	
 	// Called every frame

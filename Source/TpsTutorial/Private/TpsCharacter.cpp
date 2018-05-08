@@ -5,12 +5,9 @@
 #include <Components/SkeletalMeshComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
-//#include <GameFramework/PawnMovementComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 #include "../Public/TpsCharacter.h"
 #include "TpsWeapon.h"
-
-
 
 // Sets default values
 ATpsCharacter::ATpsCharacter()
@@ -37,6 +34,8 @@ ATpsCharacter::ATpsCharacter()
 	SpringArmComp->bUsePawnControlRotation = true;           // Must-have
 	SpringArmComp->TargetArmLength = 250.f;                  // length of the spring arm
 	SpringArmComp->SocketOffset = FVector(0.f, 60.f, 40.f);  // Offset at the end of spring arm(socket)
+	SpringArmComp->bEnableCameraLag = true;
+	SpringArmComp->CameraLagSpeed = 10.f;
 	//SpringArmComp->SetRelativeLocationAndRotation(FVector(15.f, 0.f, 0.f), FRotator(0.f, -60.f, 0.f));
 
 	// Create a UCameraComponent for this player.
@@ -50,7 +49,7 @@ void ATpsCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	// Spawn weapon
-	if (WeaponInstance)
+	if (WeaponClass)
 	{
 		// Get transformation of spawned actor (values not important because it will be attached 
 		// to character's weapon socket later
@@ -62,16 +61,24 @@ void ATpsCharacter::BeginPlay()
 		params.Instigator = Instigator;
 
 		// Spawn the actor (weapon)
-		AActor* weapon = GetWorld()->SpawnActor(WeaponInstance, &transform, params);
-		if (weapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
+		currentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
+		if (currentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
 		{
 			// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
 			// And Weld Simulated Bodies set to true
 			FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
 
 			// Attach weapon to the WeaponSocket
-			weapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
+			currentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
 		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No socket named WeaponSocket!!! Please create one."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No Weapon class assigned. Pls do so in BP editor."));
 	}
 
 }
@@ -109,6 +116,11 @@ void ATpsCharacter::endCrouch()
 	UnCrouch(); // Built-in function
 }
 
+void ATpsCharacter::Fire()
+{
+	currentWeapon->ShootProjectile();
+}
+
 // Called every frame
 void ATpsCharacter::Tick(float DeltaTime)
 {
@@ -133,5 +145,6 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Bind actions(NOTE: cannot directly use Crouch() and UnCrouch() function here. Why??)
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::beginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::endCrouch);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::Fire);
 }
 
