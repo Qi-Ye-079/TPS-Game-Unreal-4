@@ -49,12 +49,25 @@ void ATpsCharacter::BeginPlay()
 
 void ATpsCharacter::MoveForward(float axisValue)
 {
-	AddMovementInput(GetActorForwardVector() * axisValue);
+	// Get the direction of the controller
+	const FRotator ControllerRotation = GetControlRotation();
+
+	// Get the forward vector
+	const FVector forward = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::X);
+
+	// Apply the forward vector to input
+	AddMovementInput(forward, axisValue);
 }
 
 void ATpsCharacter::MoveRight(float axisValue)
 {
-	AddMovementInput(GetActorRightVector() * axisValue);
+	// Get the direction to the right of the controller
+	const FRotator ControllerRotation = GetControlRotation();
+
+	// Get the right vector
+	const FVector right = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::Y);
+
+	AddMovementInput(right, axisValue);
 }
 
 void ATpsCharacter::beginCrouch()

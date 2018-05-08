@@ -9,7 +9,7 @@ Content/AnimStarterPack/
 
 # VS generated files
 *.suo
-*.VC.db
+*.VC.db*
 *.opendb
 *.user
 *.ipch
