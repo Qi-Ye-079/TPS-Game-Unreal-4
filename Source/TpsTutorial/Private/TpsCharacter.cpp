@@ -2,11 +2,14 @@
 
 #include "TpsCharacter.h"
 #include <Components/InputComponent.h>
+#include <Components/SkeletalMeshComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
 //#include <GameFramework/PawnMovementComponent.h>
-#include "GameFramework/CharacterMovementComponent.h"
+#include <GameFramework/CharacterMovementComponent.h>
 #include "../Public/TpsCharacter.h"
+#include "TpsWeapon.h"
+
 
 
 // Sets default values
@@ -45,6 +48,31 @@ ATpsCharacter::ATpsCharacter()
 void ATpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Spawn weapon
+	if (WeaponInstance)
+	{
+		// Get transformation of spawned actor (values not important because it will be attached 
+		// to character's weapon socket later
+		FTransform transform;
+
+		// Get the spawn parameters
+		FActorSpawnParameters params;
+		params.Owner = this;
+		params.Instigator = Instigator;
+
+		// Spawn the actor (weapon)
+		AActor* weapon = GetWorld()->SpawnActor(WeaponInstance, &transform, params);
+		if (weapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
+		{
+			// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
+			// And Weld Simulated Bodies set to true
+			FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+
+			// Attach weapon to the WeaponSocket
+			weapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
+		}
+	}
 
 }
 
