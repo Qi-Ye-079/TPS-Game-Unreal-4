@@ -1,3 +1,5 @@
+# Need AnimStarterPack and Weapons (They won't be tracked)
+
 # Unreal 4 cache folders
 Intermediate/
 Saved/
@@ -6,6 +8,7 @@ Build/
 DerivedDataCache/
 Content/StarterContent/
 Content/AnimStarterPack/
+Content/Weapons/
 
 # VS generated files
 *.suo
