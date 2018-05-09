@@ -6,6 +6,9 @@
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
+#include <Kismet/GameplayStatics.h>
+#include <Particles/ParticleSystem.h>
+#include <Particles/ParticleSystemComponent.h>
 #include "../Public/TpsCharacter.h"
 #include "TpsWeapon.h"
 
@@ -154,12 +157,11 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 //************************************
 void ATpsCharacter::ShootWeapon()
 {
-	// First we need to line trace from the view of camera
 	// Get the location and rotation of from camera's view
 	FVector CamLocation;
 	FRotator CamRotation;
-	//SpringArmComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, camLocation, camRotation);
 	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
+	
 	// Get the end location of tracing line with a large distance
 	FVector& StartLocation = CamLocation;
 	FVector  EndLocation   = CamLocation + CamRotation.Vector() * 10000.f;
@@ -174,10 +176,24 @@ void ATpsCharacter::ShootWeapon()
 	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
 	// Note that the hit actor's collision should be enabled, especially the traced channel
 	FHitResult HitResult; // The HitResult struct
-	if (CurrentWeapon && 
-		GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams))
+	bool hit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams);
+	if ( CurrentWeapon && hit)
 	{
 		CurrentWeapon->Fire(HitResult);
 	}
+
+	// Add smoke tracer effect
+	USkeletalMeshComponent* WeaponSkeletalMesh = CurrentWeapon->MeshComp;
+	if (WeaponSkeletalMesh)
+	{
+		FVector MuzzleLocation = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+		UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentWeapon->TracerEffect, MuzzleLocation);
+		if (TracerBeam)
+		{
+			const FVector& EndPoint = hit ? HitResult.ImpactPoint : EndLocation;
+			TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
+		}
+	}
+	
 }
 

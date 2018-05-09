@@ -26,15 +26,21 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
 	class UParticleSystem* ImpactEffect;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	class UParticleSystem* TracerEffect;
 
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Effects")
 	TSubclassOf<class UDamageType> DamageType;
 
+	UFUNCTION(BlueprintCallable)
+	void Fire(const FHitResult& hit);
+
+	// Character can have access to all the members above.
+	friend class ATpsCharacter;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	void Fire(const FHitResult& hit);
 };

@@ -29,12 +29,20 @@ void ATpsWeapon::BeginPlay()
 	
 }
 
+//************************************
+// Method:    Fire
+// FullName:  ATpsWeapon::Fire
+// Access:    protected 
+// Returns:   void
+// Qualifier:
+// Parameter: hit - the reference to the HitResult
+//************************************
 void ATpsWeapon::Fire(const FHitResult& hit)
 {
 	// Draw a debug line to help visualize the tracing line
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
 	FVector HitLocation = hit.ImpactPoint;
-	DrawDebugLine(GetWorld(), MuzzleLocation, HitLocation, FColor::Red, false, 1.f, 0, 1.f);
+	//DrawDebugLine(GetWorld(), MuzzleLocation, HitLocation, FColor::Red, false, 1.f, 0, 1.f);
 	
 	// Apply particle effect on the muzzle
 	if (MuzzleEffect)
