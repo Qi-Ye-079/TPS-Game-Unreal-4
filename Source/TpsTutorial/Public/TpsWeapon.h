@@ -34,7 +34,7 @@ protected:
 	TSubclassOf<class UDamageType> DamageType;
 
 	UFUNCTION(BlueprintCallable)
-	void Fire(const FHitResult& hit);
+	virtual void Fire(const FHitResult& hit);
 
 	// Character can have access to all the members above.
 	friend class ATpsCharacter;
