@@ -21,11 +21,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USkeletalMeshComponent* MeshComp;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	class UParticleSystem* MuzzleEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	class UParticleSystem* ImpactEffect;
+
+	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Effects")
+	TSubclassOf<class UDamageType> DamageType;
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	// Getter for the skeletal mesh component
+
 	UFUNCTION(BlueprintCallable)
-	USkeletalMeshComponent* getSkeletalMesh() const;
+	void Fire(const FHitResult& hit);
 };

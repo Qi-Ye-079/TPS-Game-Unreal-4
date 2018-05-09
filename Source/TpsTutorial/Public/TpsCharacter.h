@@ -27,9 +27,9 @@ protected:
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
 	//BInd action
-	void beginCrouch();
-	void endCrouch();
-	void Fire();
+	void BeginCrouch();
+	void EndCrouch();
+	void ShootWeapon();
 
 	// Main camera component
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
@@ -44,10 +44,8 @@ protected:
 	TSubclassOf<class ATpsWeapon> WeaponClass;
 
 	// The spawned weapon instance
-	ATpsWeapon* currentWeapon;
+	ATpsWeapon* CurrentWeapon;
 
-	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class UDamageType> DamageType;
 
 public:	
 	// Called every frame

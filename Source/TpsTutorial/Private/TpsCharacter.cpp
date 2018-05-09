@@ -6,8 +6,6 @@
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
-#include <DrawDebugHelpers.h>
-#include <Kismet/GameplayStatics.h>
 #include "../Public/TpsCharacter.h"
 #include "TpsWeapon.h"
 
@@ -64,15 +62,15 @@ void ATpsCharacter::BeginPlay()
 		params.Instigator = Instigator;
 
 		// Spawn the actor (weapon)
-		currentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
-		if (currentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
+		CurrentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
+		if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
 		{
 			// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
 			// And Weld Simulated Bodies set to true
 			FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
 
 			// Attach weapon to the WeaponSocket
-			currentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
+			CurrentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
 		}
 		else
 		{
@@ -109,12 +107,12 @@ void ATpsCharacter::MoveRight(float axisValue)
 	AddMovementInput(right, axisValue);
 }
 
-void ATpsCharacter::beginCrouch()
+void ATpsCharacter::BeginCrouch()
 {
 	Crouch(); // Built-in function
 }
 
-void ATpsCharacter::endCrouch()
+void ATpsCharacter::EndCrouch()
 {
 	UnCrouch(); // Built-in function
 }
@@ -141,58 +139,45 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Then go to UE4 Project Settings -> Input -> axis mappings to create axis inputs.
 
 	// Bind actions(NOTE: cannot directly use Crouch() and UnCrouch() function here. Why??)
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::beginCrouch);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::endCrouch);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::Fire);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::BeginCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::EndCrouch);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::ShootWeapon);
 }
 
 //************************************
-// Method:    Fire
-// FullName:  ATpsCharacter::Fire
+// Method:    ShootWeapon
+// FullName:  ATpsCharacter::ShootWeapon
 // Access:    public 
 // Returns:   void
 // Qualifier: 
 // Parameter: None
 //************************************
-void ATpsCharacter::Fire()
+void ATpsCharacter::ShootWeapon()
 {
 	// First we need to line trace from the view of camera
 	// Get the location and rotation of from camera's view
-	FVector camLocation;
-	FRotator camRotation;
+	FVector CamLocation;
+	FRotator CamRotation;
 	//SpringArmComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, camLocation, camRotation);
-	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, camLocation, camRotation);
+	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
 	// Get the end location of tracing line with a large distance
-	FVector& startLocation = camLocation;
-	FVector  endLocation   = camLocation + camRotation.Vector() * 10000.f;
+	FVector& StartLocation = CamLocation;
+	FVector  EndLocation   = CamLocation + CamRotation.Vector() * 10000.f;
 
 	// Better to specify the Collision Query Parameters as well
 	// For a precise hit point; more costly but looks way more natural
 	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(currentWeapon);
+	QueryParams.AddIgnoredActor(CurrentWeapon);
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.bTraceComplex = true;
 
 	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
 	// Note that the hit actor's collision should be enabled, especially the traced channel
-	FHitResult hit; // The HitResult struct
-	if (currentWeapon && 
-		GetWorld()->LineTraceSingleByChannel(hit, startLocation, endLocation, ECC_Visibility, QueryParams))
+	FHitResult HitResult; // The HitResult struct
+	if (CurrentWeapon && 
+		GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams))
 	{
-		// If blocking hit happens: get the location of weapon muzzle and hit point
-		USkeletalMeshComponent* WeaponSkeletalMesh = currentWeapon->getSkeletalMesh();
-		if (WeaponSkeletalMesh)
-		{
-			FVector muzzleLocation = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-			FVector hitLocation = hit.ImpactPoint;
-			// Draw a debug line to help visualize the tracing line
-			DrawDebugLine(GetWorld(), muzzleLocation, hitLocation, FColor::Red, false, 1.f, 0, 1.f);
-
-			// Get the player controller who shot the weapon
-			AController* eventInstigator = GetInstigatorController();
-			// Apply damage to the actor who is hit
-			UGameplayStatics::ApplyPointDamage(hit.GetActor(), 20.f, (hitLocation - muzzleLocation), hit, eventInstigator, this, DamageType);
-		}
+		CurrentWeapon->Fire(HitResult);
 	}
 }
 
