@@ -21,15 +21,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USkeletalMeshComponent* MeshComp;
 
-	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class UDamageType> DamageType;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	//UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ShootProjectile(class UCameraComponent* CameraComp);
 	
-	
+	// Getter for the skeletal mesh component
+	UFUNCTION(BlueprintCallable)
+	USkeletalMeshComponent* getSkeletalMesh() const;
 };

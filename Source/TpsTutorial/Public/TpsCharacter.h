@@ -46,6 +46,9 @@ protected:
 	// The spawned weapon instance
 	ATpsWeapon* currentWeapon;
 
+	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Weapon")
+	TSubclassOf<class UDamageType> DamageType;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
