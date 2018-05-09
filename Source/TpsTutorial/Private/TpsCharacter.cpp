@@ -176,18 +176,23 @@ void ATpsCharacter::Fire()
 	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
 	// Note that the hit actor's collision should be enabled, especially the traced channel
 	FHitResult hit; // The HitResult struct
-	if (GetWorld()->LineTraceSingleByChannel(hit, startLocation, endLocation, ECC_Visibility, QueryParams))
+	if (currentWeapon && 
+		GetWorld()->LineTraceSingleByChannel(hit, startLocation, endLocation, ECC_Visibility, QueryParams))
 	{
 		// If blocking hit happens: get the location of weapon muzzle and hit point
-		FVector muzzleLocation = currentWeapon->getSkeletalMesh()->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-		FVector hitLocation = hit.ImpactPoint;
-		// Draw a debug line to help visualize the tracing line
-		DrawDebugLine(GetWorld(), muzzleLocation, hitLocation, FColor::Red, false, 1.f, 0, 1.f);
+		USkeletalMeshComponent* WeaponSkeletalMesh = currentWeapon->getSkeletalMesh();
+		if (WeaponSkeletalMesh)
+		{
+			FVector muzzleLocation = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+			FVector hitLocation = hit.ImpactPoint;
+			// Draw a debug line to help visualize the tracing line
+			DrawDebugLine(GetWorld(), muzzleLocation, hitLocation, FColor::Red, false, 1.f, 0, 1.f);
 
-		// Get the player controller who shot the weapon
-		AController* eventInstigator = GetInstigatorController();
-		// Apply damage to the actor who is hit
-		UGameplayStatics::ApplyPointDamage(hit.GetActor(), 20.f, (hitLocation - muzzleLocation), hit, eventInstigator, this, DamageType);
+			// Get the player controller who shot the weapon
+			AController* eventInstigator = GetInstigatorController();
+			// Apply damage to the actor who is hit
+			UGameplayStatics::ApplyPointDamage(hit.GetActor(), 20.f, (hitLocation - muzzleLocation), hit, eventInstigator, this, DamageType);
+		}
 	}
 }
 
