@@ -9,6 +9,7 @@ DerivedDataCache/
 Content/StarterContent/
 Content/AnimStarterPack/
 Content/Weapons/
+Content/WeaponEffects/
 
 # VS generated files
 *.suo
@@ -16,4 +17,4 @@ Content/Weapons/
 *.opendb
 *.user
 *.ipch
-Content/WeaponEffects/
+
