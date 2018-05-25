@@ -19,7 +19,7 @@ ATpsCharacter::ATpsCharacter()
 	,ZoomSpeed(10.f)
 	,ZoomInFov(45.f)
 	,DefaultFov(90.f)
-	,ZoomHeight(70.f)
+	,ZoomHeight(75.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

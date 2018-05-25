@@ -65,7 +65,7 @@ protected:
 	float ZoomAlpha; // 0 by default
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomHeight; // 70.f by default
+	float ZoomHeight; // 75.f by default
 
 
 public:	
