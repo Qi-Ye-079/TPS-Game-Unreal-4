@@ -10,6 +10,8 @@ Content/StarterContent/
 Content/AnimStarterPack/
 Content/Weapons/
 Content/WeaponEffects/
+Content/Collections/
+Content/Developers/
 
 # VS generated files
 *.suo
