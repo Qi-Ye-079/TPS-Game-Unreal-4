@@ -192,44 +192,47 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 //************************************
 void ATpsCharacter::ShootWeapon()
 {
-	// Get the location and rotation of from camera's view
-	FVector CamLocation;
-	FRotator CamRotation;
-	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
-	
-	// Get the end location of tracing line with a large distance
-	FVector& StartLocation = CamLocation;
-	FVector  EndLocation   = CamLocation + CamRotation.Vector() * 10000.f;
-
-	// Better to specify the Collision Query Parameters as well
-	// For a precise hit point; more costly but looks way more natural
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(CurrentWeapon);
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.bTraceComplex = true;
-
-	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
-	// Note that the hit actor's collision should be enabled, especially the traced channel
-	FHitResult HitResult; // The HitResult struct
-	bool hit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams);
-	if ( CurrentWeapon && hit)
+	// Fire only when zooming in
+	if (ZoomingIn)
 	{
-		CurrentWeapon->Fire(HitResult);
-	}
+		// Get the location and rotation of from camera's view
+		FVector CamLocation;
+		FRotator CamRotation;
+		CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
 
-	// Add smoke tracer effect
-	USkeletalMeshComponent* WeaponSkeletalMesh = CurrentWeapon->MeshComp;
-	if (WeaponSkeletalMesh)
-	{
-		FVector MuzzleLocation = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-		UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentWeapon->TracerEffect, MuzzleLocation);
-		if (TracerBeam)
+		// Get the end location of tracing line with a large distance
+		FVector& StartLocation = CamLocation;
+		FVector  EndLocation = CamLocation + CamRotation.Vector() * 10000.f;
+
+		// Better to specify the Collision Query Parameters as well
+		// For a precise hit point; more costly but looks way more natural
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(CurrentWeapon);
+		QueryParams.AddIgnoredActor(this);
+		QueryParams.bTraceComplex = true;
+
+		// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
+		// Note that the hit actor's collision should be enabled, especially the traced channel
+		FHitResult HitResult; // The HitResult struct
+		bool hit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams);
+		if (CurrentWeapon && hit)
 		{
-			const FVector& EndPoint = hit ? HitResult.ImpactPoint : EndLocation;
-			TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
+			CurrentWeapon->Fire(HitResult);
+		}
+
+		// Add smoke tracer effect
+		USkeletalMeshComponent* WeaponSkeletalMesh = CurrentWeapon->MeshComp;
+		if (WeaponSkeletalMesh)
+		{
+			FVector MuzzleLocation = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+			UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentWeapon->TracerEffect, MuzzleLocation);
+			if (TracerBeam)
+			{
+				const FVector& EndPoint = hit ? HitResult.ImpactPoint : EndLocation;
+				TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
+			}
 		}
 	}
-	
 }
 
 
