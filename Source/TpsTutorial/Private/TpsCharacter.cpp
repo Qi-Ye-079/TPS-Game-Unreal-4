@@ -15,6 +15,11 @@
 
 // Sets default values
 ATpsCharacter::ATpsCharacter()
+	:ZoomingIn(false)
+	,ZoomSpeed(10.f)
+	,ZoomInFov(45.f)
+	,DefaultFov(90.f)
+	,ZoomHeight(70.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -45,6 +50,7 @@ ATpsCharacter::ATpsCharacter()
 	// Create a UCameraComponent for this player.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
+	CameraComp->SetFieldOfView(DefaultFov);
 }
 
 // Called when the game starts or when spawned
@@ -120,10 +126,37 @@ void ATpsCharacter::EndCrouch()
 	UnCrouch(); // Built-in function
 }
 
+void ATpsCharacter::ZoomIn()
+{
+	ZoomingIn = true;
+	bUseControllerRotationYaw = true;
+}
+
+void ATpsCharacter::ZoomOut()
+{
+	ZoomingIn = false;
+	bUseControllerRotationYaw = false;
+}
+
 // Called every frame
 void ATpsCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);	
+
+	// Handle zoom in/out
+	if (ZoomingIn)
+	{
+		ZoomAlpha += DeltaTime * ZoomSpeed;
+	}
+	else
+	{
+		ZoomAlpha -= DeltaTime * ZoomSpeed;
+	}
+	// Clamp the ZoomAlpha value between 0 ~ 1.0
+	ZoomAlpha = FMath::Clamp(ZoomAlpha, 0.f, 1.f);
+	// Update SpringArm's socket height and FOV
+	SpringArmComp->SocketOffset.Z = FMath::Lerp(40.f, ZoomHeight, ZoomAlpha);
+	CameraComp->SetFieldOfView(FMath::Lerp(DefaultFov, ZoomInFov, ZoomAlpha));
 
 }
 
@@ -145,6 +178,8 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::EndCrouch);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::ShootWeapon);
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATpsCharacter::ZoomIn);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATpsCharacter::ZoomOut);
 }
 
 //************************************
@@ -196,4 +231,5 @@ void ATpsCharacter::ShootWeapon()
 	}
 	
 }
+
 

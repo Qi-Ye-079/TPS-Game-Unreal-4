@@ -30,6 +30,8 @@ protected:
 	void BeginCrouch();
 	void EndCrouch();
 	void ShootWeapon();
+	void ZoomIn();
+	void ZoomOut();
 
 	// Main camera component
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
@@ -45,6 +47,25 @@ protected:
 
 	// The spawned weapon instance
 	ATpsWeapon* CurrentWeapon;
+
+	// The camera's zoom properties
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")
+	bool ZoomingIn; // false by default
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomSpeed; // 10.f by default
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomInFov; // 45.f by default
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float DefaultFov; // 90.f by default
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomAlpha; // 0 by default
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomHeight; // 70.f by default
 
 
 public:	
