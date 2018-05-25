@@ -14,3 +14,11 @@ Because some content assets are ignored, every time this repo is cloned, besides
 
 1.	don't forget to add a **WeaponSocket** on the **hand_r** socket on the Skeleton of the SK_Mannequin_Skeleton and carefully adjust its transformation, as the correct spawing of the weapon needs it.
 2.	Duplicate **UE4ASP_HeroTPP_AnimBlueprint** and name it **Custom_Anim_BP**, which will be used for player character's animation blueprint.
+
+**Documentations that may be helpful:**
+
+1.	[Skeletal Mesh Animation System](https://docs.unrealengine.com/en-us/Engine/Animation)
+2.	[C++ FPS tutorial](http://api.unrealengine.com/latest/INT/Programming/Tutorials/FirstPersonShooter/index.html) - include projectile implementation.
+3.	[Components and Collision](http://api.unrealengine.com/latest/INT/Programming/Tutorials/Components/index.html)
+4.	[User Interface With UMG](http://api.unrealengine.com/latest/INT/Programming/Tutorials/UMG/index.html)
+5.	[Variables, Timers, and Events](http://api.unrealengine.com/latest/INT/Programming/Tutorials/VariablesTimersEvents/index.html)
