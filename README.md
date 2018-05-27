@@ -22,3 +22,5 @@ Because some content assets are ignored, every time this repo is cloned, besides
 3.	[Components and Collision](http://api.unrealengine.com/latest/INT/Programming/Tutorials/Components/index.html)
 4.	[User Interface With UMG](http://api.unrealengine.com/latest/INT/Programming/Tutorials/UMG/index.html)
 5.	[Variables, Timers, and Events](http://api.unrealengine.com/latest/INT/Programming/Tutorials/VariablesTimersEvents/index.html)
+6.	[Add a Surface Type](https://docs.unrealengine.com/en-us/Engine/Physics/PhysicalMaterials/HowTo/AddSurfaceType)
+
