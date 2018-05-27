@@ -45,6 +45,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class ATpsWeapon> WeaponClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<UCameraShake> CamShakeClass;
+
 	// The spawned weapon instance
 	ATpsWeapon* CurrentWeapon;
 

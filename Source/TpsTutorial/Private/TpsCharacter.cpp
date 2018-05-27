@@ -154,8 +154,7 @@ void ATpsCharacter::Tick(float DeltaTime)
 	}
 	// Clamp the ZoomAlpha value between 0 ~ 1.0
 	ZoomAlpha = FMath::Clamp(ZoomAlpha, 0.f, 1.f);
-	// Update SpringArm's socket height and FOV
-	SpringArmComp->SocketOffset.Z = FMath::Lerp(40.f, ZoomHeight, ZoomAlpha);
+	// Update FOV
 	CameraComp->SetFieldOfView(FMath::Lerp(DefaultFov, ZoomInFov, ZoomAlpha));
 
 }
@@ -231,6 +230,13 @@ void ATpsCharacter::ShootWeapon()
 				const FVector& EndPoint = hit ? HitResult.ImpactPoint : EndLocation;
 				TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
 			}
+		}
+
+		// Add camera shake effect
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		if (PlayerController && CamShakeClass)
+		{
+			PlayerController->ClientPlayCameraShake(CamShakeClass);
 		}
 	}
 }
