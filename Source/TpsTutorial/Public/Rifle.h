@@ -22,8 +22,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// The fire function of this weapon
 	UFUNCTION(BlueprintCallable)
-	virtual void Fire(const FHitResult& hit) override;
+	virtual void Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation) override;
 
 	// Character can have access to all the members above.
 	friend class ATpsCharacter;

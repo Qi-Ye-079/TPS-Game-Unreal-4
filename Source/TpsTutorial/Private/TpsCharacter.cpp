@@ -8,18 +8,12 @@
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystem.h>
-#include <Particles/ParticleSystemComponent.h>
 #include "../Public/TpsCharacter.h"
 #include "TpsWeapon.h"
 
 
 // Sets default values
 ATpsCharacter::ATpsCharacter()
-	:ZoomingIn(false)
-	,ZoomSpeed(10.f)
-	,ZoomInFov(45.f)
-	,DefaultFov(90.f)
-	,ZoomHeight(75.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -194,6 +188,7 @@ void ATpsCharacter::ShootWeapon()
 	// Fire only when zooming in
 	if (ZoomingIn)
 	{
+		// ======= Step 1: Do single line tracing and fire weapon ========
 		// Get the location and rotation of from camera's view
 		FVector CamLocation;
 		FRotator CamRotation;
@@ -201,7 +196,7 @@ void ATpsCharacter::ShootWeapon()
 
 		// Get the end location of tracing line with a large distance
 		FVector& StartLocation = CamLocation;
-		FVector  EndLocation = CamLocation + CamRotation.Vector() * 10000.f;
+		FVector  EndLocation   = CamLocation + CamRotation.Vector() * 10000.f;
 
 		// Better to specify the Collision Query Parameters as well
 		// For a precise hit point; more costly but looks way more natural
@@ -209,29 +204,19 @@ void ATpsCharacter::ShootWeapon()
 		QueryParams.AddIgnoredActor(CurrentWeapon);
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
+		QueryParams.bReturnPhysicalMaterial = true; // Important!!!
 
 		// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
 		// Note that the hit actor's collision should be enabled, especially the traced channel
-		FHitResult HitResult; // The HitResult struct
-		bool hit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams);
-		if (CurrentWeapon && hit)
+		FHitResult HitResult;
+		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams);
+		if (CurrentWeapon)
 		{
-			CurrentWeapon->Fire(HitResult);
+			CurrentWeapon->Fire(IsHit, HitResult, EndLocation);
 		}
 
-		// Add smoke tracer effect
-		USkeletalMeshComponent* WeaponSkeletalMesh = CurrentWeapon->MeshComp;
-		if (WeaponSkeletalMesh)
-		{
-			FVector MuzzleLocation = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-			UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentWeapon->TracerEffect, MuzzleLocation);
-			if (TracerBeam)
-			{
-				const FVector& EndPoint = hit ? HitResult.ImpactPoint : EndLocation;
-				TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
-			}
-		}
 
+		// ======= Step 2: Add camera shake effect ========
 		// Add camera shake effect
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 		if (PlayerController && CamShakeClass)

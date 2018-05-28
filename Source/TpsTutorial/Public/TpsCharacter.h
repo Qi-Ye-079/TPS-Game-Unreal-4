@@ -53,22 +53,22 @@ protected:
 
 	// The camera's zoom properties
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")
-	bool ZoomingIn; // false by default
+	bool ZoomingIn = false; // false by default
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomSpeed; // 10.f by default
+	float ZoomSpeed = 10.f; // 10.f by default
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomInFov; // 45.f by default
+	float ZoomInFov = 45.f; // 45.f by default
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float DefaultFov; // 90.f by default
+	float DefaultFov = 90.f; // 90.f by default
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomAlpha; // 0 by default
+	float ZoomAlpha = 0; // 0 by default
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomHeight; // 75.f by default
+	float ZoomHeight = 75.f; // 75.f by default
 
 
 public:	

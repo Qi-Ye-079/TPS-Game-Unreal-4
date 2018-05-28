@@ -9,7 +9,12 @@
 #include <DrawDebugHelpers.h>
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystem.h>
+#include <PhysicalMaterials/PhysicalMaterial.h>
+#include <Particles/ParticleSystemComponent.h>
 
+// Definitions of surface types
+#define Flesh_default     SurfaceType1
+#define Flesh_Vulnerable  SurfaceType2
 
 // Sets default values
 ATpsWeapon::ATpsWeapon()
@@ -30,9 +35,74 @@ void ATpsWeapon::BeginPlay()
 }
 
 
-void ATpsWeapon::Fire(const FHitResult& hit)
+//************************************
+// Method:    Fire
+// FullName:  ATpsWeapon::Fire
+// Access:    protected 
+// Returns:   void
+// Qualifier:
+// Parameter: HitRes - the reference to the HitResult
+//************************************
+void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation)
 {
-	// Dummy implementation
+	// 1. Get muzzle location and EndPoint; draw a debug line to help visualize the tracing line
+	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+	FVector EndPoint = IsHit ? HitRes.ImpactPoint : TracingEndLocation;
+	//DrawDebugLine(GetWorld(), MuzzleLocation, EndPoint, FColor::Red, false, 1.f, 0, 1.f);
+
+	if (MeshComp)
+	{
+		// 2. Apply particle effect on the muzzle
+		if (MuzzleEffect)
+		{
+			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, TEXT("MuzzleFlashSocket"));
+		}
+
+		// 3. Apply smoke effect
+		if (TracerEffect)
+		{
+			FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+			UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerEffect, MuzzleLocation);
+			if (TracerBeam)
+			{
+				//const FVector& EndPoint = IsHit ? HitRes.ImpactPoint : EndLocation;
+				TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
+			}
+		}
+	}
+
+	// 4. Handle impact effect
+	// Select the impact effect type
+	if (IsHit)
+	{
+		EPhysicalSurface HitPhysicalSurf = UPhysicalMaterial::DetermineSurfaceType(HitRes.PhysMaterial.Get());
+		UParticleSystem* CurrentImpactEffect = nullptr;
+
+		switch (HitPhysicalSurf)
+		{
+		case Flesh_default:
+		case Flesh_Vulnerable:
+			CurrentImpactEffect = FleshImpactEffect;
+			break;
+		default:
+			CurrentImpactEffect = DefaultImpactEffect;
+			break;
+		}
+
+		// Spawn the blood effect on the hit actor
+		if (CurrentImpactEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentImpactEffect, HitRes.ImpactPoint, HitRes.ImpactNormal.Rotation());
+		}
+	}
+
+	// 5. Get the player controller who shot the weapon and apply damage to the actor who is hit
+	AController* EventInstigator = GetOwner()->GetInstigatorController();
+	if (EventInstigator && IsHit)
+	{
+		const FVector HitFromDirection = EndPoint - MuzzleLocation;
+		UGameplayStatics::ApplyPointDamage(HitRes.GetActor(), 20.f, HitFromDirection, HitRes, EventInstigator, this, DamageType);
+	}
 }
 
 // Called every frame
