@@ -10,6 +10,7 @@
 #include <Particles/ParticleSystem.h>
 #include "../Public/TpsCharacter.h"
 #include "TpsWeapon.h"
+#include <TimerManager.h>
 
 
 // Sets default values
@@ -120,6 +121,25 @@ void ATpsCharacter::EndCrouch()
 	UnCrouch(); // Built-in function
 }
 
+void ATpsCharacter::StartShoot()
+{
+	// Check if the weapon is automatic and get its fire rate
+	bool Loop = CurrentWeapon->IsAutomatic();
+	float FirePeriod = 1.f / (CurrentWeapon->GetFireRatePerSecond());
+
+	// Determine the delay of pressing the mouse
+	float FirstDelay = FMath::Max(LastFireTime + FirePeriod - GetWorld()->TimeSeconds, 0.f);
+
+	// Keeps shooting weapon at the desired rate
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATpsCharacter::ShootWeapon, FirePeriod, Loop, FirstDelay);
+}
+
+void ATpsCharacter::EndShoot()
+{
+	// Clear the timer handler
+	GetWorldTimerManager().ClearTimer(TimerHandle);
+}
+
 void ATpsCharacter::ZoomIn()
 {
 	ZoomingIn = true;
@@ -170,7 +190,8 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Bind actions(NOTE: cannot directly use Crouch() and UnCrouch() function here. Why??)
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::EndCrouch);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::ShootWeapon);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::StartShoot);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATpsCharacter::EndShoot);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATpsCharacter::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATpsCharacter::ZoomOut);
 }
@@ -223,6 +244,9 @@ void ATpsCharacter::ShootWeapon()
 		{
 			PlayerController->ClientPlayCameraShake(CamShakeClass);
 		}
+
+		// Crucial: update the time of last shot for proper automatic fire
+		LastFireTime = GetWorld()->TimeSeconds;
 	}
 }
 

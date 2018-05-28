@@ -20,9 +20,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// The fire function of this weapon
-	UFUNCTION(BlueprintCallable)
-	virtual void Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation);
 
 	// =============== Variables =====================
 
@@ -52,16 +49,28 @@ protected:
 
 	// Is this an automatic weapon. Default is false.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
-	bool Auto = false;
+	bool Auto = true;
 
+	// Base damage of this weapon. Default is 20
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
 	float BaseDamage = 20.f;
 
-	// Character can have access to all the members above.
-	friend class ATpsCharacter;
+	// The number of fires per second. Default is 10
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
+	float FireRatePerSecond = 10.f;
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// The fire function of this weapon
+	UFUNCTION(BlueprintCallable)
+	virtual void Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation);
+
+	// Return if this weapon is automatic or not
+	bool IsAutomatic() const;
+
+	// Return the rate of fire per second for this weapon
+	float GetFireRatePerSecond() const;
 };

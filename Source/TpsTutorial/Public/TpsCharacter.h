@@ -23,13 +23,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Shoot weapon function; will be looping if the current weapon is automatic
+	UFUNCTION(BlueprintCallable)
+	void ShootWeapon();
+
 	// Bind axis inputs
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
 	//BInd action
 	void BeginCrouch();
 	void EndCrouch();
-	void ShootWeapon();
+	void StartShoot();
+	void EndShoot();
 	void ZoomIn();
 	void ZoomOut();
 
@@ -50,6 +55,12 @@ protected:
 
 	// The spawned weapon instance
 	ATpsWeapon* CurrentWeapon;
+
+	// The timer handler for shooting weapon
+	FTimerHandle TimerHandle;
+
+	// The last fire time
+	float LastFireTime;
 
 	// The camera's zoom properties
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")

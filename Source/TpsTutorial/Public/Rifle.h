@@ -26,9 +26,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation) override;
 
-	// Character can have access to all the members above.
-	friend class ATpsCharacter;
-
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

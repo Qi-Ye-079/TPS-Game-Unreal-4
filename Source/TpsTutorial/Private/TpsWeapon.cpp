@@ -109,6 +109,16 @@ void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector
 	}
 }
 
+bool ATpsWeapon::IsAutomatic() const
+{
+	return Auto;
+}
+
+float ATpsWeapon::GetFireRatePerSecond() const
+{
+	return FireRatePerSecond;
+}
+
 // Called every frame
 void ATpsWeapon::Tick(float DeltaTime)
 {
