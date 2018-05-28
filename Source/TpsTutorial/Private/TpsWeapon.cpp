@@ -71,7 +71,8 @@ void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector
 		}
 	}
 
-	// 4. Handle impact effect
+	// 4. Handle impact effect and damage
+	float ActualDamage = BaseDamage;
 	// Select the impact effect type
 	if (IsHit)
 	{
@@ -80,8 +81,10 @@ void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector
 
 		switch (HitPhysicalSurf)
 		{
-		case Flesh_default:
 		case Flesh_Vulnerable:
+			// If head shot: 5x more damage
+			ActualDamage *= 5.f;
+		case Flesh_default:
 			CurrentImpactEffect = FleshImpactEffect;
 			break;
 		default:
@@ -101,7 +104,8 @@ void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector
 	if (EventInstigator && IsHit)
 	{
 		const FVector HitFromDirection = EndPoint - MuzzleLocation;
-		UGameplayStatics::ApplyPointDamage(HitRes.GetActor(), 20.f, HitFromDirection, HitRes, EventInstigator, this, DamageType);
+		UGameplayStatics::ApplyPointDamage(HitRes.GetActor(), ActualDamage, HitFromDirection, HitRes, EventInstigator, this, DamageType);
+		DrawDebugString(GetWorld(), HitRes.ImpactPoint, FString::SanitizeFloat(ActualDamage), nullptr, FColor::White, 2.f);
 	}
 }
 

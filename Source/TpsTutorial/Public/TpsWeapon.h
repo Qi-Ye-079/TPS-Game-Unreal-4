@@ -54,6 +54,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
 	bool Auto = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
+	float BaseDamage = 20.f;
+
 	// Character can have access to all the members above.
 	friend class ATpsCharacter;
 
