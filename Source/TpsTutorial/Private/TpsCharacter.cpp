@@ -9,6 +9,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystem.h>
 #include "Components/CapsuleComponent.h"
+#include "../Components/TpsHealthComponent.h"
 #include "../Public/TpsCharacter.h"
 #include <TimerManager.h>
 
@@ -43,6 +44,10 @@ ATpsCharacter::ATpsCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->SetFieldOfView(DefaultFov);
+
+	// Add dynamic delegate to the On Health Changed event in health component
+	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
+	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsCharacter::OnHealthChanged);
 
 	// Make the Capsule component ignore the Weapon Collision trace channel
 	// since we only want the Mesh Component to respond to that channel
@@ -254,4 +259,22 @@ void ATpsCharacter::ShootWeapon()
 	}
 }
 
+
+void ATpsCharacter::OnHealthChanged(class UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	// If current health is 0 and is alive: die!
+	if (CurrentHealth <= 0.f && !bDead)
+	{
+		// Set alive to false
+		bDead = true;
+
+		// Stop character's movement
+		GetCharacterMovement()->StopMovementImmediately();
+
+		// Disable all character's collisions
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// Then play death animation. To be done in Animation BP...
+	}
+}
 

@@ -50,7 +50,7 @@ protected:
 
 	// Is this an automatic weapon. Default is false.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
-	bool Auto;
+	bool bAuto;
 
 	// Base damage of this weapon. Default is 20
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")

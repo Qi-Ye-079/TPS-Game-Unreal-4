@@ -7,7 +7,7 @@
 ARifle::ARifle()
 {
 	// Set up 3 key properties
-	Auto = true;
+	bAuto = true;
 	BaseDamage = 20.f;
 	FireRatePerSecond = 10.f;
 }

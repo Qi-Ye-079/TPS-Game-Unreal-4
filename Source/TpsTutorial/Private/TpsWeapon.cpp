@@ -107,7 +107,7 @@ void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector
 
 bool ATpsWeapon::IsAutomatic() const
 {
-	return Auto;
+	return bAuto;
 }
 
 float ATpsWeapon::GetFireRatePerSecond() const

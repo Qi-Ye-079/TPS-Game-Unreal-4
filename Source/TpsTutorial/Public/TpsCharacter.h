@@ -28,6 +28,10 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ShootWeapon();
 
+	// dynamic delegate function on health changed
+	UFUNCTION()
+	void OnHealthChanged(class UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 	// Bind axis inputs
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
@@ -46,6 +50,9 @@ protected:
 	// Spring Arm component
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
+
+	// Health component
+	UTpsHealthComponent* HealthComp;
 
 	// The weapon class to spawn the weapon
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -82,6 +89,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
 	float ZoomHeight = 75.f; // 75.f by default
 
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bDead = false;
 
 public:	
 	// Called every frame
