@@ -9,7 +9,6 @@
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystem.h>
 #include "../Public/TpsCharacter.h"
-#include "TpsWeapon.h"
 #include <TimerManager.h>
 
 
@@ -230,7 +229,7 @@ void ATpsCharacter::ShootWeapon()
 		// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
 		// Note that the hit actor's collision should be enabled, especially the traced channel
 		FHitResult HitResult;
-		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams);
+		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, COLLISION_WEAPON, QueryParams);
 		if (CurrentWeapon)
 		{
 			CurrentWeapon->Fire(IsHit, HitResult, EndLocation);

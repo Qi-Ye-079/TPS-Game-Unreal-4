@@ -12,10 +12,6 @@
 #include <PhysicalMaterials/PhysicalMaterial.h>
 #include <Particles/ParticleSystemComponent.h>
 
-// Definitions of surface types
-#define Flesh_default     SurfaceType1
-#define Flesh_Vulnerable  SurfaceType2
-
 // Sets default values
 ATpsWeapon::ATpsWeapon()
 {

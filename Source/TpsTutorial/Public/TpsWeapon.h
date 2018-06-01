@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TpsTutorial.h"
 #include "TpsWeapon.generated.h"
 
 UCLASS()

@@ -4,3 +4,8 @@
 
 #include "CoreMinimal.h"
 
+// Definitions of surface types
+#define Flesh_default     SurfaceType1
+#define Flesh_Vulnerable  SurfaceType2
+#define COLLISION_WEAPON  ECC_GameTraceChannel1
+

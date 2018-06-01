@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "TpsWeapon.h"
 #include "TpsCharacter.generated.h"
 
 // Pre-declaration
@@ -48,7 +49,7 @@ protected:
 
 	// The weapon class to spawn the weapon
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class ATpsWeapon> WeaponClass;
+	TSubclassOf<ATpsWeapon> WeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> CamShakeClass;
