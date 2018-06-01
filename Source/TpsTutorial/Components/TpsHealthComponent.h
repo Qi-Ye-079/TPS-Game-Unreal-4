@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "TpsHealthComponent.generated.h"
 
+// DEclare a multi-cast delegate event when health is changed
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UTpsHealthComponent*, HealthComp, float, CurrentHealth, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
 
 UCLASS( ClassGroup=(CharacterHealth), meta=(BlueprintSpawnableComponent) )
 class TPSTUTORIAL_API UTpsHealthComponent : public UActorComponent
@@ -34,6 +36,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHealthChangedSignature OnHealthChanged;
 	
 };

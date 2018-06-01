@@ -41,6 +41,9 @@ void UTpsHealthComponent::UpdateHealthOnDamage(AActor* DamagedActor, float Damag
 
 	// Log output
 	UE_LOG(LogTemp, Log, TEXT("Health Updated: %s"), *FString::SanitizeFloat(CurrentHealth));
+
+	// Implement the FOnHealthChangedSignature event by Broadcasting the delegate
+	OnHealthChanged.Broadcast(this, CurrentHealth, Damage, DamageType, InstigatedBy, DamageCauser);
 }
 
 // Called every frame
