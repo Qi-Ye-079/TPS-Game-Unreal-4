@@ -24,11 +24,24 @@ void UTpsHealthComponent::BeginPlay()
 	AActor *Owner = GetOwner();
 	if (Owner)
 	{
-		//Owner->OnTakeAnyDamage()
+		Owner->OnTakeAnyDamage.AddDynamic(this, &UTpsHealthComponent::UpdateHealthOnDamage);
 	}
 	
 }
 
+
+void UTpsHealthComponent::UpdateHealthOnDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	// If no damage, just return
+	if (Damage <= 0.f)
+		return;
+
+	// Update health
+	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+
+	// Log output
+	UE_LOG(LogTemp, Log, TEXT("Health Updated: %s"), *FString::SanitizeFloat(CurrentHealth));
+}
 
 // Called every frame
 void UTpsHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

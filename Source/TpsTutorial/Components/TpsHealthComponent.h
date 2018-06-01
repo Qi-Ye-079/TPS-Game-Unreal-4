@@ -20,6 +20,10 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	// Dynamic Delegate function to update health on damage
+	UFUNCTION() // Must-have for dynamic delegate to work!!!
+	void UpdateHealthOnDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HealthComponent")
 	float CurrentHealth;
 

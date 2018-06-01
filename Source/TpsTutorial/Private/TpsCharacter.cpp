@@ -8,6 +8,7 @@
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystem.h>
+#include "Components/CapsuleComponent.h"
 #include "../Public/TpsCharacter.h"
 #include <TimerManager.h>
 
@@ -28,9 +29,6 @@ ATpsCharacter::ATpsCharacter()
 	CharMoveComp->bOrientRotationToMovement = true;
 	CharMoveComp->MaxWalkSpeed = 450.f;
 
-	// Auto posses player 0
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
-
 	// Create a Spring Arm Component
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);           // Must-have
@@ -45,6 +43,13 @@ ATpsCharacter::ATpsCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->SetFieldOfView(DefaultFov);
+
+	// Make the Capsule component ignore the Weapon Collision trace channel
+	// since we only want the Mesh Component to respond to that channel
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+
+	// Auto posses player 0
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
 // Called when the game starts or when spawned
