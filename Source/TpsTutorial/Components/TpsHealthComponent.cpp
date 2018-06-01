@@ -1,0 +1,40 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "TpsHealthComponent.h"
+
+
+// Sets default values for this component's properties
+UTpsHealthComponent::UTpsHealthComponent()
+{
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = false;  // Not ticking
+
+	// Set 2 health variables
+	CurrentHealth = MaxHealth = 100.f;
+}
+
+
+// Called when the game starts
+void UTpsHealthComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Get the owner
+	AActor *Owner = GetOwner();
+	if (Owner)
+	{
+		//Owner->OnTakeAnyDamage()
+	}
+	
+}
+
+
+// Called every frame
+void UTpsHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// ...
+}
+

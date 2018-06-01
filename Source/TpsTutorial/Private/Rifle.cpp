@@ -6,7 +6,10 @@
 
 ARifle::ARifle()
 {
-	// Empty since the parent already does everything
+	// Set up 3 key properties
+	Auto = true;
+	BaseDamage = 20.f;
+	FireRatePerSecond = 10.f;
 }
 
 void ARifle::BeginPlay()

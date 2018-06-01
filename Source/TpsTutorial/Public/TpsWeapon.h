@@ -50,15 +50,15 @@ protected:
 
 	// Is this an automatic weapon. Default is false.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
-	bool Auto = true;
+	bool Auto;
 
 	// Base damage of this weapon. Default is 20
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
-	float BaseDamage = 20.f;
+	float BaseDamage;
 
 	// The number of fires per second. Default is 10
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
-	float FireRatePerSecond = 10.f;
+	float FireRatePerSecond;
 
 
 public:	
