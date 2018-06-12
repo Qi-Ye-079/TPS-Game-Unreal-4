@@ -47,7 +47,7 @@ ATpsCharacter::ATpsCharacter()
 
 	// Add dynamic delegate to the On Health Changed event in health component
 	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
-	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsCharacter::OnHealthChanged);
+	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsCharacter::HandleHealthUpdate);
 
 	// Make the Capsule component ignore the Weapon Collision trace channel
 	// since we only want the Mesh Component to respond to that channel
@@ -260,7 +260,7 @@ void ATpsCharacter::ShootWeapon()
 }
 
 
-void ATpsCharacter::OnHealthChanged(class UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If current health is 0 and is alive: die!
 	if (CurrentHealth <= 0.f && !bDead)

@@ -30,7 +30,7 @@ protected:
 
 	// dynamic delegate function on health changed
 	UFUNCTION()
-	void OnHealthChanged(class UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void HandleHealthUpdate(class UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	// Bind axis inputs
 	void MoveForward(float axisValue);
