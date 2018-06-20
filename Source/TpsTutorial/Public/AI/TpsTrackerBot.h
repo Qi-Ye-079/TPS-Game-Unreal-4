@@ -22,6 +22,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	class UStaticMeshComponent *StaticMeshComp;
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetNextPathPoint();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
