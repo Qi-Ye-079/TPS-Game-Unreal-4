@@ -19,16 +19,32 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetNextPathPoint();
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	class UStaticMeshComponent *StaticMeshComp;
 
-	UFUNCTION(BlueprintCallable)
-	FVector GetNextPathPoint();
+	// Keep track of next path point
+	FVector NextPathPoint;
+
+	// The magnitude of Force to apply to this tracker bot
+	UPROPERTY(EditDefaultsOnly, Category = "Movements")
+	float ForceMag;
+
+	// Whether or not the Force is taken as a change of acceleration instead of force.
+	// If true, mass will no effect.
+	UPROPERTY(EditDefaultsOnly, Category = "Movements")
+	bool bAccelChangeInVelocity;
+
+	// The minimal required distance between this and target.
+	// When the distance is smaller than this value, this will get to next path point.
+	UPROPERTY(EditDefaultsOnly, Category = "Movements")
+	float RequiredDistanceToTarget;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
-	
+
 };
