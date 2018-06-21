@@ -7,7 +7,7 @@
 #include "TpsHealthComponent.generated.h"
 
 // DEclare a multi-cast delegate event when health is changed
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UTpsHealthComponent*, HealthComp, float, CurrentHealth, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UTpsHealthComponent*, OwningHealthComp, float, CurrentHealth, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
 
 UCLASS( ClassGroup=(CharacterHealth), meta=(BlueprintSpawnableComponent) )
 class TPSTUTORIAL_API UTpsHealthComponent : public UActorComponent

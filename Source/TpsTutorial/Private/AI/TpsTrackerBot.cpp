@@ -7,6 +7,9 @@
 #include "AI/Navigation/NavigationSystem.h"
 #include "AI/Navigation/NavigationPath.h"
 #include "DrawDebugHelpers.h"
+#include "../../Components/TpsHealthComponent.h"
+#include "GameFramework/DamageType.h"
+#include "GameFramework/Controller.h"
 
 
 // Sets default values
@@ -23,6 +26,10 @@ ATpsTrackerBot::ATpsTrackerBot()
 	StaticMeshComp->SetCanEverAffectNavigation(false);
 	StaticMeshComp->SetSimulatePhysics(true);  // Must-have for AddForce to work!!!
 	RootComponent = StaticMeshComp;
+
+	// Create health component
+	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
+	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsTrackerBot::HandleHealthUpdate);
 }
 
 // Called when the game starts or when spawned
@@ -55,6 +62,17 @@ FVector ATpsTrackerBot::GetNextPathPoint()
 		// Return current point
 		return GetActorLocation();
 	}
+}
+
+void ATpsTrackerBot::HandleHealthUpdate(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
+	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	// If current health == 0: explode
+
+	// @TODO: pulse material on hit
+
+	// Output log
+	UE_LOG(LogTemp, Log, TEXT("Tracker Bot Health changed: %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());
 }
 
 // Called every frame

@@ -260,7 +260,7 @@ void ATpsCharacter::ShootWeapon()
 }
 
 
-void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* HealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+void ATpsCharacter::HandleHealthUpdate(class UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If current health is 0 and is alive: die!
 	if (CurrentHealth <= 0.f && !bDead)
