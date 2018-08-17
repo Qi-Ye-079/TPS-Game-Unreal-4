@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TpsWeapon.h"
-#include <Components/SkeletalMeshComponent.h>
-#include <CollisionQueryParams.h>
-#include <Engine/World.h>
-#include <Camera/CameraComponent.h>
-#include <GameFramework/SpringArmComponent.h>
-#include <DrawDebugHelpers.h>
-#include <Kismet/GameplayStatics.h>
-#include <Particles/ParticleSystem.h>
-#include <PhysicalMaterials/PhysicalMaterial.h>
-#include <Particles/ParticleSystemComponent.h>
+#include "Components/SkeletalMeshComponent.h"
+#include "CollisionQueryParams.h"
+#include "Engine/World.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ATpsWeapon::ATpsWeapon()
@@ -36,10 +36,9 @@ void ATpsWeapon::BeginPlay()
 // FullName:  ATpsWeapon::Fire
 // Access:    protected 
 // Returns:   void
-// Qualifier:
 // Parameter: HitRes - the reference to the HitResult
 //************************************
-void ATpsWeapon::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation)
+void ATpsWeapon::Fire(bool IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation)
 {
 	// 1. Get muzzle location and EndPoint; draw a debug line to help visualize the tracing line
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));

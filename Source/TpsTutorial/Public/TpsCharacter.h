@@ -7,9 +7,13 @@
 #include "TpsWeapon.h"
 #include "TpsCharacter.generated.h"
 
-// Pre-declaration
+// Forward declarations
 class UCameraComponent;
 class USpringArmComponent;
+class UTpsHealthComponent;
+class UDamageType;
+class AController;
+class UInputComponent;
 
 UCLASS()
 class TPSTUTORIAL_API ATpsCharacter : public ACharacter
@@ -21,6 +25,8 @@ public:
 	ATpsCharacter();
 
 protected:
+	// ============== FUNCTIONS ==============
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -30,7 +36,15 @@ protected:
 
 	// dynamic delegate function on health changed
 	UFUNCTION()
-	void HandleHealthUpdate(class UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+	// Create the crosshair widget in BP
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateCrosshairWidgetEvent();
+
+	// Create the health indicator widget in BP
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateHealthIndicatorEvent();
 
 	// Bind axis inputs
 	void MoveForward(float axisValue);
@@ -43,15 +57,17 @@ protected:
 	void ZoomIn();
 	void ZoomOut();
 
+	// ================ VARIABLES ================
 	// Main camera component
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
 
 	// Spring Arm component
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
 	// Health component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTpsHealthComponent* HealthComp;
 
 	// The weapon class to spawn the weapon
@@ -60,6 +76,30 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> CamShakeClass;
+
+	// Whether the player is zooming in
+	UPROPERTY(BlueprintReadOnly, Category = "Camera Zoom")
+	bool bAiming;
+
+	// The zooming speed
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomSpeed;
+
+	// The FOV after zoom in
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomInFov;
+
+	// The default FOV
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float DefaultFov;
+
+	// The height when zoom in
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float ZoomHeight;
+
+	// Whether the character is dead or not
+	UPROPERTY(BlueprintReadOnly, Category = "Player Status")
+	bool bDead;
 
 	// The spawned weapon instance
 	ATpsWeapon* CurrentWeapon;
@@ -70,33 +110,14 @@ protected:
 	// The last fire time
 	float LastFireTime;
 
-	// The camera's zoom properties
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")
-	bool ZoomingIn = false; // false by default
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomSpeed = 10.f; // 10.f by default
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomInFov = 45.f; // 45.f by default
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float DefaultFov = 90.f; // 90.f by default
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomAlpha = 0; // 0 by default
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomHeight = 75.f; // 75.f by default
-
-	UPROPERTY(BlueprintReadOnly, Category = "Player")
-	bool bDead = false;
+	// The percentage of zooming (0 by default)
+	float ZoomAlpha;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 };

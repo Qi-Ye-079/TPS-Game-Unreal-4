@@ -6,8 +6,12 @@
 #include "Components/ActorComponent.h"
 #include "TpsHealthComponent.generated.h"
 
+// Forward declarations
+class UDamageType;
+class AController;
+
 // DEclare a multi-cast delegate event when health is changed
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UTpsHealthComponent*, OwningHealthComp, float, CurrentHealth, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UTpsHealthComponent*, OwningHealthComp, float, CurrentHealth, float, HealthDelta, const UDamageType*, DamageType, AController*, InstigatedBy, AActor*, DamageCauser);
 
 UCLASS( ClassGroup=(CharacterHealth), meta=(BlueprintSpawnableComponent) )
 class TPSTUTORIAL_API UTpsHealthComponent : public UActorComponent
@@ -24,7 +28,7 @@ protected:
 
 	// Dynamic Delegate function to update health on damage
 	UFUNCTION() // Must-have for dynamic delegate to work!!!
-	void UpdateHealthOnDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void UpdateHealthOnDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HealthComponent")
 	float CurrentHealth;

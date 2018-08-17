@@ -18,12 +18,6 @@ void ARifle::BeginPlay()
 
 }
 
-void ARifle::Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation)
-{
-	Super::Fire(IsHit, HitRes, TracingEndLocation);
-
-}
-
 void ARifle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

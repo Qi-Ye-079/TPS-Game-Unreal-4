@@ -30,7 +30,7 @@ void UTpsHealthComponent::BeginPlay()
 }
 
 
-void UTpsHealthComponent::UpdateHealthOnDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void UTpsHealthComponent::UpdateHealthOnDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If no damage, just return
 	if (Damage <= 0.f)

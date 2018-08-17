@@ -6,6 +6,11 @@
 #include "GameFramework/Pawn.h"
 #include "TpsTrackerBot.generated.h"
 
+class UStaticMeshComponent;
+class UTpsHealthComponent;
+class UDamageType;
+class AController;
+
 UCLASS()
 class TPSTUTORIAL_API ATpsTrackerBot : public APawn
 {
@@ -23,14 +28,14 @@ protected:
 	FVector GetNextPathPoint();
 
 	UFUNCTION()
-	void HandleHealthUpdate(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
-			const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
+			const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
-	class UStaticMeshComponent *StaticMeshComp;
+	UStaticMeshComponent *StaticMeshComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
-	class UTpsHealthComponent *HealthComp;
+	UTpsHealthComponent *HealthComp;
 
 	// Keep track of next path point
 	FVector NextPathPoint;

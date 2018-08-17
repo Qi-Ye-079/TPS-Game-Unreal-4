@@ -1,21 +1,26 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TpsCharacter.h"
-#include <Components/InputComponent.h>
-#include <Components/SkeletalMeshComponent.h>
-#include <Camera/CameraComponent.h>
-#include <GameFramework/SpringArmComponent.h>
-#include <GameFramework/CharacterMovementComponent.h>
-#include <Kismet/GameplayStatics.h>
-#include <Particles/ParticleSystem.h>
+#include "Components/TpsHealthComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "../Components/TpsHealthComponent.h"
-#include "../Public/TpsCharacter.h"
-#include <TimerManager.h>
-
+#include "Components/InputComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
+#include "TimerManager.h"
 
 // Sets default values
 ATpsCharacter::ATpsCharacter()
+	// Initializer list with default values
+	:bAiming(false)
+	,ZoomSpeed(10.f)
+	,ZoomInFov(45.f)
+	,DefaultFov(90.f)
+	,ZoomHeight(75.f)
+	,bDead(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -34,18 +39,17 @@ ATpsCharacter::ATpsCharacter()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);           // Must-have
 	SpringArmComp->bUsePawnControlRotation = true;           // Must-have
-	SpringArmComp->TargetArmLength = 250.f;                  // length of the spring arm
-	SpringArmComp->SocketOffset = FVector(0.f, 60.f, 40.f);  // Offset at the end of spring arm(socket)
+	SpringArmComp->TargetArmLength = 300.f;                  // length of the spring arm
+	SpringArmComp->SocketOffset = FVector(0.f, 60.f, 80.f);  // Offset at the end of spring arm(socket)
 	SpringArmComp->bEnableCameraLag = true;
 	SpringArmComp->CameraLagSpeed = 10.f;
-	//SpringArmComp->SetRelativeLocationAndRotation(FVector(15.f, 0.f, 0.f), FRotator(0.f, -60.f, 0.f));
 
 	// Create a UCameraComponent for this player.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->SetFieldOfView(DefaultFov);
 
-	// Add dynamic delegate to the On Health Changed event in health component
+	// Subscribe to the On Health Changed event in health component
 	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
 	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsCharacter::HandleHealthUpdate);
 
@@ -62,39 +66,41 @@ void ATpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Spawn weapon
-	if (WeaponClass)
+	// If no weapon to spawn, return
+	if (!WeaponClass)
 	{
-		// Get transformation of spawned actor (values not important because it will be attached 
-		// to character's weapon socket later
-		FTransform transform;
+		UE_LOG(LogTemp, Error, TEXT("No Weapon class assigned. Pls do so in BP editor."));
+		return;
+	}
 
-		// Get the spawn parameters
-		FActorSpawnParameters params;
-		params.Owner = this;
-		params.Instigator = Instigator;
+	// Get transformation of spawned actor (values not important because it will be attached 
+	// to character's weapon socket later
+	FTransform transform;
 
-		// Spawn the actor (weapon)
-		CurrentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
-		if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
-		{
-			// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
-			// And Weld Simulated Bodies set to true
-			FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+	// Get the spawn parameters
+	FActorSpawnParameters params;
+	params.Owner = this;
+	params.Instigator = Instigator;
 
-			// Attach weapon to the WeaponSocket
-			CurrentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("No socket named WeaponSocket!!! Please create one."));
-		}
+	// Spawn the actor (weapon)
+	CurrentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
+	if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
+	{
+		// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
+		// And Weld Simulated Bodies set to true
+		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+
+		// Attach weapon to the WeaponSocket
+		CurrentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("No Weapon class assigned. Pls do so in BP editor."));
+		UE_LOG(LogTemp, Error, TEXT("No socket named WeaponSocket!!! Please create one."));
 	}
 
+	// Create crosshair and health indicator widgets (implemented in BP)
+	CreateCrosshairWidgetEvent();
+	CreateHealthIndicatorEvent();
 }
 
 void ATpsCharacter::MoveForward(float axisValue)
@@ -151,13 +157,13 @@ void ATpsCharacter::EndShoot()
 
 void ATpsCharacter::ZoomIn()
 {
-	ZoomingIn = true;
+	bAiming = true;
 	bUseControllerRotationYaw = true;
 }
 
 void ATpsCharacter::ZoomOut()
 {
-	ZoomingIn = false;
+	bAiming = false;
 	bUseControllerRotationYaw = false;
 }
 
@@ -167,7 +173,7 @@ void ATpsCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);	
 
 	// Handle zoom in/out
-	if (ZoomingIn)
+	if (bAiming)
 	{
 		ZoomAlpha += DeltaTime * ZoomSpeed;
 	}
@@ -216,65 +222,64 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void ATpsCharacter::ShootWeapon()
 {
 	// Fire only when zooming in
-	if (ZoomingIn)
+	if (!bAiming)
+		return;
+
+	// ======= Step 1: Do single line tracing and fire weapon ========
+	// Get the location and rotation of from camera's view
+	FVector CamLocation;
+	FRotator CamRotation;
+	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
+
+	// Get the end location of tracing line with a large distance
+	FVector& StartLocation = CamLocation;
+	FVector  EndLocation = CamLocation + CamRotation.Vector() * 10000.f;
+
+	// Better to specify the Collision Query Parameters as well
+	// For a precise hit point; more costly but looks way more natural
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(CurrentWeapon);
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.bTraceComplex = true;
+	QueryParams.bReturnPhysicalMaterial = true; // Important!!!
+
+	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line
+	// Note that the hit actor's collision should be enabled, especially the traced channel
+	FHitResult HitResult;
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, COLLISION_WEAPON, QueryParams);
+	if (CurrentWeapon)
 	{
-		// ======= Step 1: Do single line tracing and fire weapon ========
-		// Get the location and rotation of from camera's view
-		FVector CamLocation;
-		FRotator CamRotation;
-		CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
-
-		// Get the end location of tracing line with a large distance
-		FVector& StartLocation = CamLocation;
-		FVector  EndLocation   = CamLocation + CamRotation.Vector() * 10000.f;
-
-		// Better to specify the Collision Query Parameters as well
-		// For a precise hit point; more costly but looks way more natural
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(CurrentWeapon);
-		QueryParams.AddIgnoredActor(this);
-		QueryParams.bTraceComplex = true;
-		QueryParams.bReturnPhysicalMaterial = true; // Important!!!
-
-		// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line)
-		// Note that the hit actor's collision should be enabled, especially the traced channel
-		FHitResult HitResult;
-		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, COLLISION_WEAPON, QueryParams);
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->Fire(IsHit, HitResult, EndLocation);
-		}
-
-
-		// ======= Step 2: Add camera shake effect ========
-		// Add camera shake effect
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-		if (PlayerController && CamShakeClass)
-		{
-			PlayerController->ClientPlayCameraShake(CamShakeClass);
-		}
-
-		// Crucial: update the time of last shot for proper automatic fire
-		LastFireTime = GetWorld()->TimeSeconds;
+		CurrentWeapon->Fire(IsHit, HitResult, EndLocation);
 	}
+
+	// ======= Step 2: Add camera shake effect ========
+	// Add camera shake effect
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && CamShakeClass)
+	{
+		PlayerController->ClientPlayCameraShake(CamShakeClass);
+	}
+
+	// Crucial: update the time of last shot for proper automatic fire
+	LastFireTime = GetWorld()->TimeSeconds;
 }
 
 
-void ATpsCharacter::HandleHealthUpdate(class UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If current health is 0 and is alive: die!
-	if (CurrentHealth <= 0.f && !bDead)
-	{
-		// Set alive to false
-		bDead = true;
+	if (CurrentHealth > 0.f || bDead)
+		return;
 
-		// Stop character's movement
-		GetCharacterMovement()->StopMovementImmediately();
+	// Set alive to false
+	bDead = true;
 
-		// Disable all character's collisions
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// Stop character's movement
+	GetCharacterMovement()->StopMovementImmediately();
 
-		// Then play death animation. To be done in Animation BP...
-	}
+	// Disable all character's collisions
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Then play death animation. To be done in Animation BP...
 }
 

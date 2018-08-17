@@ -22,10 +22,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// The fire function of this weapon
-	UFUNCTION(BlueprintCallable)
-	virtual void Fire(const bool& IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation) override;
-
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

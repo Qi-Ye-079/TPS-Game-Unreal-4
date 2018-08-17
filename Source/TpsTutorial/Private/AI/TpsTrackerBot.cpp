@@ -1,15 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TpsTrackerBot.h"
+#include "Components/TpsHealthComponent.h"
 #include "GameFramework/Character.h"
-#include "Components/StaticMeshComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "AI/Navigation/NavigationSystem.h"
-#include "AI/Navigation/NavigationPath.h"
-#include "DrawDebugHelpers.h"
-#include "../../Components/TpsHealthComponent.h"
 #include "GameFramework/DamageType.h"
 #include "GameFramework/Controller.h"
+#include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
+#include "GameFramework/Actor.h"
 
 
 // Sets default values
@@ -29,13 +30,17 @@ ATpsTrackerBot::ATpsTrackerBot()
 
 	// Create health component
 	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
-	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsTrackerBot::HandleHealthUpdate);
 }
 
 // Called when the game starts or when spawned
 void ATpsTrackerBot::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Subscribe to the On Health Changed event of Health Component.
+	// Add dynamic in the BeginPlay instead of Constructor because this dynamic was added after
+	// the creation of BP, and it wouldn't work to put it in the constructor(bug?).
+	HealthComp->OnHealthChanged.AddDynamic(this, &ATpsTrackerBot::HandleOnTakeDamage);
 
 	// Find initial next path point
 	NextPathPoint = GetNextPathPoint();
@@ -48,7 +53,7 @@ FVector ATpsTrackerBot::GetNextPathPoint()
 	ACharacter *PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
 
 	// Get the navigation path
-	UNavigationPath *NavPath = UNavigationSystem::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
+	UNavigationPath *NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
 
 	// Get the next path point if path points is greater than 1
 	if (NavPath->PathPoints.Num() > 1)
@@ -62,17 +67,18 @@ FVector ATpsTrackerBot::GetNextPathPoint()
 		// Return current point
 		return GetActorLocation();
 	}
+
 }
 
-void ATpsTrackerBot::HandleHealthUpdate(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
-	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void ATpsTrackerBot::HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
+	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If current health == 0: explode
 
 	// @TODO: pulse material on hit
 
 	// Output log
-	UE_LOG(LogTemp, Log, TEXT("Tracker Bot Health changed: %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());
+	UE_LOG(LogTemp, Log, TEXT("Health %s of %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());
 }
 
 // Called every frame
