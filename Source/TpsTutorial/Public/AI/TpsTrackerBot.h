@@ -6,11 +6,13 @@
 #include "GameFramework/Pawn.h"
 #include "TpsTrackerBot.generated.h"
 
+// Forward declarations
 class UStaticMeshComponent;
 class UTpsHealthComponent;
 class UDamageType;
 class AController;
 class UParticleSystem;
+class USphereComponent;
 
 UCLASS()
 class TPSTUTORIAL_API ATpsTrackerBot : public APawn
@@ -32,6 +34,9 @@ protected:
 	// Self destruct when hp is 0
 	void Explode();
 
+	// Damage itself
+	void DamageSelf();
+
 	UFUNCTION()
 	void HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
 			const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
@@ -41,6 +46,9 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly)
 	UTpsHealthComponent *HealthComp;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	USphereComponent* SphereComp;
 
 	// Keep track of next path point
 	FVector NextPathPoint;
@@ -70,15 +78,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	float ExplodeBaseDamage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
+	float SelfDamage;
+
 	// The explosion radius
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	float ExplodeRadius;
 
-
+	// Timer handle for self-damaging when near player
+	FTimerHandle TimerHandle_SelfDamage;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
+	// Override overlapping event with other actor
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

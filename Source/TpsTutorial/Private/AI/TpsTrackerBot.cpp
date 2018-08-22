@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TpsTrackerBot.h"
+#include "TpsCharacter.h"
 #include "Components/TpsHealthComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/DamageType.h"
 #include "GameFramework/Controller.h"
@@ -21,6 +23,7 @@ ATpsTrackerBot::ATpsTrackerBot()
 	,RequiredDistanceToTarget(100.f)
 	,ExplodeBaseDamage(50.f)
 	,ExplodeRadius(300.f)
+	,SelfDamage(20.f)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -30,6 +33,15 @@ ATpsTrackerBot::ATpsTrackerBot()
 	StaticMeshComp->SetCanEverAffectNavigation(false);
 	StaticMeshComp->SetSimulatePhysics(true);  // Must-have for AddForce to work!!!
 	RootComponent = StaticMeshComp;
+
+	// Use sphere component for collision test
+	// Ignore all channels except for the ECC_Pawn channel.
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SphereComp->SetSphereRadius(ExplodeRadius * 0.9f);
+	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	SphereComp->SetupAttachment(RootComponent);
 
 	// Create health component
 	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
@@ -48,6 +60,7 @@ void ATpsTrackerBot::BeginPlay()
 	// Find initial next path point
 	NextPathPoint = GetNextPathPoint();
 }
+
 
 FVector ATpsTrackerBot::GetNextPathPoint()
 {
@@ -89,6 +102,14 @@ void ATpsTrackerBot::Explode()
 	// Destroy this tracker bot
 	Destroy();
 }
+
+
+void ATpsTrackerBot::DamageSelf()
+{
+	// Damage itself
+	UGameplayStatics::ApplyDamage(this, SelfDamage, GetInstigatorController(), this, nullptr);
+}
+
 
 void ATpsTrackerBot::HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
@@ -144,5 +165,17 @@ void ATpsTrackerBot::Tick(float DeltaTime)
 	// Add debug sphere to help visualize the next point
 	DrawDebugDirectionalArrow(GetWorld(), CurrentPoint, NextPathPoint, 40.f, FColor::Yellow);
 	DrawDebugSphere(GetWorld(), NextPathPoint, 20.f, 10.f, FColor::Yellow);
+}
+
+
+void ATpsTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	// See if the otherActor is a TpsCharacter
+	ATpsCharacter* PlayerCharacter = Cast<ATpsCharacter>(OtherActor);
+	if (PlayerCharacter)
+	{
+		// If it's a TpsCharacter (Player): keep self damaging itself every 0.5 seconds
+		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ATpsTrackerBot::DamageSelf, 0.5f, true, 0.f);
+	}
 }
 
