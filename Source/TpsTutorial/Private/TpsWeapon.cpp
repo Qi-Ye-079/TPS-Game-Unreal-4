@@ -30,28 +30,26 @@ void ATpsWeapon::BeginPlay()
 	
 }
 
+// Called every frame
+void ATpsWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 
-//************************************
-// Method:    Fire
-// FullName:  ATpsWeapon::Fire
-// Access:    protected 
-// Returns:   void
-// Parameter: HitRes - the reference to the HitResult
-//************************************
-void ATpsWeapon::Fire(bool IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation)
+}
+
+
+void ATpsWeapon::Fire(bool bHit, const FHitResult& HitRes, const FVector& TraceEnd)
 {
 	// 1. Get muzzle location and EndPoint; draw a debug line to help visualize the tracing line
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-	FVector EndPoint = IsHit ? HitRes.ImpactPoint : TracingEndLocation;
+	FVector EndPoint = bHit ? HitRes.ImpactPoint : TraceEnd;
 	//DrawDebugLine(GetWorld(), MuzzleLocation, EndPoint, FColor::Red, false, 1.f, 0, 1.f);
 
 	if (MeshComp)
 	{
 		// 2. Apply particle effect on the muzzle
 		if (MuzzleEffect)
-		{
 			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, TEXT("MuzzleFlashSocket"));
-		}
 
 		// 3. Apply smoke effect
 		if (TracerEffect)
@@ -69,7 +67,7 @@ void ATpsWeapon::Fire(bool IsHit, const FHitResult& HitRes, const FVector& Traci
 	// 4. Handle impact effect and damage
 	float ActualDamage = BaseDamage;
 	// Select the impact effect type
-	if (IsHit)
+	if (bHit)
 	{
 		EPhysicalSurface HitPhysicalSurf = UPhysicalMaterial::DetermineSurfaceType(HitRes.PhysMaterial.Get());
 		UParticleSystem* CurrentImpactEffect = nullptr;
@@ -89,14 +87,12 @@ void ATpsWeapon::Fire(bool IsHit, const FHitResult& HitRes, const FVector& Traci
 
 		// Spawn the blood effect on the hit actor
 		if (CurrentImpactEffect)
-		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentImpactEffect, HitRes.ImpactPoint, HitRes.ImpactNormal.Rotation());
-		}
 	}
 
 	// 5. Get the player controller who shot the weapon and apply damage to the actor who is hit
 	AController* EventInstigator = GetOwner()->GetInstigatorController();
-	if (EventInstigator && IsHit)
+	if (EventInstigator && bHit)
 	{
 		const FVector HitFromDirection = EndPoint - MuzzleLocation;
 		UGameplayStatics::ApplyPointDamage(HitRes.GetActor(), ActualDamage, HitFromDirection, HitRes, EventInstigator, this, DamageType);
@@ -112,12 +108,5 @@ bool ATpsWeapon::IsAutomatic() const
 float ATpsWeapon::GetFireRatePerSecond() const
 {
 	return FireRatePerSecond;
-}
-
-// Called every frame
-void ATpsWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 

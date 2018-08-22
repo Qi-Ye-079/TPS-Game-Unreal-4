@@ -44,7 +44,6 @@ void ATpsTrackerBot::BeginPlay()
 
 	// Find initial next path point
 	NextPathPoint = GetNextPathPoint();
-	
 }
 
 FVector ATpsTrackerBot::GetNextPathPoint()
@@ -70,12 +69,18 @@ FVector ATpsTrackerBot::GetNextPathPoint()
 
 }
 
+
 void ATpsTrackerBot::HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If current health == 0: explode
 
 	// @TODO: pulse material on hit
+	if (!MatInstance) // Only create a new material instance when there's none
+		MatInstance = StaticMeshComp->CreateAndSetMaterialInstanceDynamicFromMaterial(0, StaticMeshComp->GetMaterial(0));
+
+	if (MatInstance) // Always make sure the material instance is not null because the above operation won't guarantee to succeed
+		MatInstance->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
 
 	// Output log
 	UE_LOG(LogTemp, Log, TEXT("Health %s of %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());

@@ -103,89 +103,19 @@ void ATpsCharacter::BeginPlay()
 	CreateHealthIndicatorEvent();
 }
 
-void ATpsCharacter::MoveForward(float axisValue)
-{
-	// Get the direction of the controller
-	const FRotator ControllerRotation = GetControlRotation();
-
-	// Get the forward vector
-	const FVector forward = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::X);
-
-	// Apply the forward vector to input
-	AddMovementInput(forward, axisValue);
-}
-
-void ATpsCharacter::MoveRight(float axisValue)
-{
-	// Get the direction to the right of the controller
-	const FRotator ControllerRotation = GetControlRotation();
-
-	// Get the right vector
-	const FVector right = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::Y);
-
-	AddMovementInput(right, axisValue);
-}
-
-void ATpsCharacter::BeginCrouch()
-{
-	Crouch(); // Built-in function
-}
-
-void ATpsCharacter::EndCrouch()
-{
-	UnCrouch(); // Built-in function
-}
-
-void ATpsCharacter::StartShoot()
-{
-	// Check if the weapon is automatic and get its fire rate
-	bool Loop = CurrentWeapon->IsAutomatic();
-	float FirePeriod = 1.f / (CurrentWeapon->GetFireRatePerSecond());
-
-	// Determine the delay of pressing the mouse
-	float FirstDelay = FMath::Max(LastFireTime + FirePeriod - GetWorld()->TimeSeconds, 0.f);
-
-	// Keeps shooting weapon at the desired rate
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATpsCharacter::ShootWeapon, FirePeriod, Loop, FirstDelay);
-}
-
-void ATpsCharacter::EndShoot()
-{
-	// Clear the timer handler
-	GetWorldTimerManager().ClearTimer(TimerHandle);
-}
-
-void ATpsCharacter::ZoomIn()
-{
-	bAiming = true;
-	bUseControllerRotationYaw = true;
-}
-
-void ATpsCharacter::ZoomOut()
-{
-	bAiming = false;
-	bUseControllerRotationYaw = false;
-}
-
 // Called every frame
 void ATpsCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);	
+	Super::Tick(DeltaTime);
 
 	// Handle zoom in/out
-	if (bAiming)
-	{
-		ZoomAlpha += DeltaTime * ZoomSpeed;
-	}
-	else
-	{
-		ZoomAlpha -= DeltaTime * ZoomSpeed;
-	}
+	bAiming? ZoomAlpha += DeltaTime * ZoomSpeed : ZoomAlpha -= DeltaTime * ZoomSpeed;
+
 	// Clamp the ZoomAlpha value between 0 ~ 1.0
 	ZoomAlpha = FMath::Clamp(ZoomAlpha, 0.f, 1.f);
+
 	// Update FOV
 	CameraComp->SetFieldOfView(FMath::Lerp(DefaultFov, ZoomInFov, ZoomAlpha));
-
 }
 
 // Called to bind functionality to input
@@ -211,14 +141,79 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATpsCharacter::ZoomOut);
 }
 
-//************************************
-// Method:    ShootWeapon
-// FullName:  ATpsCharacter::ShootWeapon
-// Access:    public 
-// Returns:   void
-// Qualifier: 
-// Parameter: None
-//************************************
+
+void ATpsCharacter::MoveForward(float axisValue)
+{
+	// Get the direction of the controller
+	const FRotator ControllerRotation = GetControlRotation();
+
+	// Get the forward vector
+	const FVector forward = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::X);
+
+	// Apply the forward vector to input
+	AddMovementInput(forward, axisValue);
+}
+
+
+void ATpsCharacter::MoveRight(float axisValue)
+{
+	// Get the direction to the right of the controller
+	const FRotator ControllerRotation = GetControlRotation();
+
+	// Get the right vector
+	const FVector right = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::Y);
+
+	AddMovementInput(right, axisValue);
+}
+
+
+void ATpsCharacter::BeginCrouch()
+{
+	Crouch(); // Built-in function
+}
+
+
+void ATpsCharacter::EndCrouch()
+{
+	UnCrouch(); // Built-in function
+}
+
+
+void ATpsCharacter::StartShoot()
+{
+	// Check if the weapon is automatic and get its fire rate
+	bool bLoop = CurrentWeapon->IsAutomatic();
+	float FirePeriod = 1.f / (CurrentWeapon->GetFireRatePerSecond());
+
+	// Determine the first delay of pressing the mouse
+	float FirstDelay = FMath::Max(LastFireTime + FirePeriod - GetWorld()->TimeSeconds, 0.f);
+
+	// Keeps shooting weapon at the desired rate
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATpsCharacter::ShootWeapon, FirePeriod, bLoop, FirstDelay);
+}
+
+
+void ATpsCharacter::EndShoot()
+{
+	// Clear the timer handler
+	GetWorldTimerManager().ClearTimer(TimerHandle);
+}
+
+
+void ATpsCharacter::ZoomIn()
+{
+	bAiming = true;
+	bUseControllerRotationYaw = true;
+}
+
+
+void ATpsCharacter::ZoomOut()
+{
+	bAiming = false;
+	bUseControllerRotationYaw = false;
+}
+
+
 void ATpsCharacter::ShootWeapon()
 {
 	// Fire only when zooming in
@@ -246,10 +241,10 @@ void ATpsCharacter::ShootWeapon()
 	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line
 	// Note that the hit actor's collision should be enabled, especially the traced channel
 	FHitResult HitResult;
-	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, COLLISION_WEAPON, QueryParams);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, COLLISION_WEAPON, QueryParams);
 	if (CurrentWeapon)
 	{
-		CurrentWeapon->Fire(IsHit, HitResult, EndLocation);
+		CurrentWeapon->Fire(bHit, HitResult, EndLocation);
 	}
 
 	// ======= Step 2: Add camera shake effect ========

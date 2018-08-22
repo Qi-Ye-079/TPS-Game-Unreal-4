@@ -54,6 +54,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Movements")
 	float RequiredDistanceToTarget;
 
+	// The material instance to pulse on taking damage
+	UMaterialInstanceDynamic* MatInstance;
+
 
 public:	
 	// Called every frame

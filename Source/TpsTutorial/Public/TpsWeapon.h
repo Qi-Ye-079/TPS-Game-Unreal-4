@@ -67,7 +67,7 @@ public:
 
 	// The fire function of this weapon
 	UFUNCTION(BlueprintCallable)
-	virtual void Fire(bool IsHit, const FHitResult& HitRes, const FVector& TracingEndLocation);
+	virtual void Fire(bool bHit, const FHitResult& HitRes, const FVector& TraceEnd);
 
 	// Return if this weapon is automatic or not
 	bool IsAutomatic() const;

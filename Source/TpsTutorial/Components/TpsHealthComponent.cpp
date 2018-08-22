@@ -23,9 +23,7 @@ void UTpsHealthComponent::BeginPlay()
 	// Get the owner
 	AActor *Owner = GetOwner();
 	if (Owner)
-	{
 		Owner->OnTakeAnyDamage.AddDynamic(this, &UTpsHealthComponent::UpdateHealthOnDamage);
-	}
 	
 }
 
