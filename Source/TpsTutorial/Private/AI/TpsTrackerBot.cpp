@@ -4,6 +4,7 @@
 #include "TpsCharacter.h"
 #include "Components/TpsHealthComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/DamageType.h"
 #include "GameFramework/Controller.h"
@@ -14,6 +15,7 @@
 #include "NavigationPath.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Actor.h"
 
 
@@ -26,6 +28,7 @@ ATpsTrackerBot::ATpsTrackerBot()
 	,ExplodeRadius(300.f)
 	,SelfDamage(20.f)
 	,SelfDamageInterval(0.5f)
+	,SoundInRangeA(10.f), SoundInRangeB(800.f), SoundOutRangeA(0.1f), SoundOutRangeB(10.f)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -44,6 +47,9 @@ ATpsTrackerBot::ATpsTrackerBot()
 	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	SphereComp->SetupAttachment(RootComponent);
+
+	// Create audio component
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
 
 	// Create health component
 	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
@@ -164,6 +170,10 @@ void ATpsTrackerBot::Tick(float DeltaTime)
 		// Apply force to this tracker bot
 		StaticMeshComp->AddForce(ForceDir, NAME_None, bAccelChangeInVelocity);
 	}
+
+	// Play rolling sound and set its volume based on current velocity
+	float VelocityLength = GetVelocity().Size();
+	AudioComp->SetVolumeMultiplier(UKismetMathLibrary::MapRangeClamped(VelocityLength, SoundInRangeA, SoundInRangeB, SoundOutRangeA, SoundOutRangeB));
 
 	// Add debug sphere to help visualize the next point
 	DrawDebugDirectionalArrow(GetWorld(), CurrentPoint, NextPathPoint, 40.f, FColor::Yellow);

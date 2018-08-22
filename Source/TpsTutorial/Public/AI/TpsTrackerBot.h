@@ -14,6 +14,7 @@ class AController;
 class UParticleSystem;
 class USphereComponent;
 class USoundCue;
+class UAudioComponent;
 
 UCLASS()
 class TPSTUTORIAL_API ATpsTrackerBot : public APawn
@@ -42,14 +43,18 @@ protected:
 	void HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
 			const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent *StaticMeshComp;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UTpsHealthComponent *HealthComp;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	USphereComponent* SphereComp;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UAudioComponent* AudioComp;
+
 
 	// Keep track of next path point
 	FVector NextPathPoint;
@@ -101,6 +106,18 @@ protected:
 	// The sound effect when self damaging starts
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	USoundCue* SelfDamageWarningSoundEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	float SoundInRangeA;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	float SoundInRangeB;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	float SoundOutRangeA;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	float SoundOutRangeB;
 
 public:	
 	// Called every frame
