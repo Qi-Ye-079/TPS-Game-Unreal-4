@@ -262,6 +262,8 @@ void ATpsCharacter::ShootWeapon()
 
 void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	UE_LOG(LogTemp, Log, TEXT("Health %s of %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());
+
 	// If current health is 0 and is alive: die!
 	if (CurrentHealth > 0.f || bDead)
 		return;

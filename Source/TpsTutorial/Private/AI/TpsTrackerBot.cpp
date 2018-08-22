@@ -10,6 +10,7 @@
 #include "DrawDebugHelpers.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "Particles/ParticleSystem.h"
 #include "GameFramework/Actor.h"
 
 
@@ -18,6 +19,8 @@ ATpsTrackerBot::ATpsTrackerBot()
 	:ForceMag(50000.f)
 	,bAccelChangeInVelocity(false)
 	,RequiredDistanceToTarget(100.f)
+	,ExplodeBaseDamage(50.f)
+	,ExplodeRadius(300.f)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -70,20 +73,43 @@ FVector ATpsTrackerBot::GetNextPathPoint()
 }
 
 
+void ATpsTrackerBot::Explode()
+{
+	// Spawn the explosion particle effect
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+
+	// Apply radial damage to surroundings
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+	UGameplayStatics::ApplyRadialDamage(this, ExplodeBaseDamage, GetActorLocation(), ExplodeRadius, nullptr, IgnoredActors, this, GetInstigatorController());
+
+	// Draw debug sphere
+	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplodeRadius, 12, FColor::Red, false, 2.f);
+
+	// Destroy this tracker bot
+	Destroy();
+}
+
 void ATpsTrackerBot::HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	// If current health == 0: explode
+	// Output log
+	UE_LOG(LogTemp, Log, TEXT("Health %s of %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());
 
-	// @TODO: pulse material on hit
-	if (!MatInstance) // Only create a new material instance when there's none
+	// If current health == 0: explode
+	if (CurrentHealth <= 0)
+	{
+		Explode();
+		return;
+	}
+
+	// Create emissive pulse on taking damage
+	if (!MatInstance) 
+		// Only create a new material instance when there's none
 		MatInstance = StaticMeshComp->CreateAndSetMaterialInstanceDynamicFromMaterial(0, StaticMeshComp->GetMaterial(0));
 
 	if (MatInstance) // Always make sure the material instance is not null because the above operation won't guarantee to succeed
 		MatInstance->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
-
-	// Output log
-	UE_LOG(LogTemp, Log, TEXT("Health %s of %s"), *FString::SanitizeFloat(CurrentHealth), *GetName());
 }
 
 // Called every frame
