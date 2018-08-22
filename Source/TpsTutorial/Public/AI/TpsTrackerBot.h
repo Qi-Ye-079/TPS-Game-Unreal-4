@@ -13,6 +13,7 @@ class UDamageType;
 class AController;
 class UParticleSystem;
 class USphereComponent;
+class USoundCue;
 
 UCLASS()
 class TPSTUTORIAL_API ATpsTrackerBot : public APawn
@@ -78,8 +79,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	float ExplodeBaseDamage;
 
+	// The self damage/interval when it's near player
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	float SelfDamage;
+
+	// The interval between self damages
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
+	float SelfDamageInterval;
 
 	// The explosion radius
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
@@ -87,6 +93,14 @@ protected:
 
 	// Timer handle for self-damaging when near player
 	FTimerHandle TimerHandle_SelfDamage;
+
+	// The sound effect when exploding
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	USoundCue* ExplodeSoundEffect;
+
+	// The sound effect when self damaging starts
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	USoundCue* SelfDamageWarningSoundEffect;
 
 public:	
 	// Called every frame

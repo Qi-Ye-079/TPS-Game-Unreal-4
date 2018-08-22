@@ -13,6 +13,7 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "Particles/ParticleSystem.h"
+#include "Sound/SoundCue.h"
 #include "GameFramework/Actor.h"
 
 
@@ -24,6 +25,7 @@ ATpsTrackerBot::ATpsTrackerBot()
 	,ExplodeBaseDamage(50.f)
 	,ExplodeRadius(300.f)
 	,SelfDamage(20.f)
+	,SelfDamageInterval(0.5f)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -99,8 +101,9 @@ void ATpsTrackerBot::Explode()
 	// Draw debug sphere
 	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplodeRadius, 12, FColor::Red, false, 2.f);
 
-	// Destroy this tracker bot
+	// Destroy this tracker bot and play explosion sound
 	Destroy();
+	UGameplayStatics::PlaySoundAtLocation(this, ExplodeSoundEffect, GetActorLocation());
 }
 
 
@@ -175,7 +178,10 @@ void ATpsTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (PlayerCharacter)
 	{
 		// If it's a TpsCharacter (Player): keep self damaging itself every 0.5 seconds
-		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ATpsTrackerBot::DamageSelf, 0.5f, true, 0.f);
+		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ATpsTrackerBot::DamageSelf, SelfDamageInterval, true, 0.f);
+
+		// Play sound effect
+		UGameplayStatics::SpawnSoundAttached(SelfDamageWarningSoundEffect, RootComponent);
 	}
 }
 
