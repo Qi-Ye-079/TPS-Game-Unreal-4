@@ -30,8 +30,6 @@ protected:
 	UDecalComponent* DecalComp;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	// Called when overlapping with other actors (overriding from Actor.h)
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;

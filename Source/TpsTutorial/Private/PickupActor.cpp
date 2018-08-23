@@ -28,13 +28,6 @@ void APickupActor::BeginPlay()
 	
 }
 
-// Called every frame
-void APickupActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 
 void APickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
