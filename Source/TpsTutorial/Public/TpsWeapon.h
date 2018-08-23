@@ -6,6 +6,11 @@
 #include "TpsTutorial.h"
 #include "TpsWeapon.generated.h"
 
+// Forward declarations
+class USkeletalMeshComponent;
+class UParticleSystem;
+class UDamageType;
+
 UCLASS()
 class TPSTUTORIAL_API ATpsWeapon : public AActor
 {
@@ -26,11 +31,11 @@ protected:
 
 	// The mesh component of this weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class USkeletalMeshComponent* MeshComp;
+	USkeletalMeshComponent* MeshComp;
 
 	// The Muzzle effect of this weapon when firing
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
-	class UParticleSystem* MuzzleEffect;
+	UParticleSystem* MuzzleEffect;
 	
 	// The line tracing effect when firing
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
@@ -46,7 +51,7 @@ protected:
 
 	// The damage type of this weapon
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Effects")
-	TSubclassOf<class UDamageType> DamageType;
+	TSubclassOf<UDamageType> DamageType;
 
 	// Is this an automatic weapon. Default is false.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")

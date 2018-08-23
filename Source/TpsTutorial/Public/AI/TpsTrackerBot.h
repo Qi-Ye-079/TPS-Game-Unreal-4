@@ -43,16 +43,16 @@ protected:
 	void HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, float CurrentHealth, float HealthDelta, 
 			const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent *StaticMeshComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UTpsHealthComponent *HealthComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UAudioComponent* AudioComp;
 
 
@@ -61,7 +61,7 @@ protected:
 
 	// The magnitude of Force to apply to this tracker bot
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
-	float ForceMag;
+	float ForceMagnitude;
 
 	// Whether or not the Force is taken as a change of acceleration instead of force.
 	// If true, mass will no effect.

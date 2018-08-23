@@ -21,7 +21,7 @@
 
 // Sets default values
 ATpsTrackerBot::ATpsTrackerBot()
-	:ForceMag(50000.f)
+	:ForceMagnitude(50000.f)
 	,bAccelChangeInVelocity(false)
 	,RequiredDistanceToTarget(100.f)
 	,ExplodeBaseDamage(50.f)
@@ -69,6 +69,44 @@ void ATpsTrackerBot::BeginPlay()
 	NextPathPoint = GetNextPathPoint();
 }
 
+// Called every frame
+void ATpsTrackerBot::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// Current location of this Tracker bot
+	FVector CurrentPoint = GetActorLocation();
+
+	// Get the distance between this and target
+	float DistanceToTarget = (NextPathPoint - CurrentPoint).Size();
+
+	// If close enough to the target
+	if (DistanceToTarget <= RequiredDistanceToTarget)
+	{
+		NextPathPoint = GetNextPathPoint();
+	}
+	else
+	{
+		// Get the direction to Force to apply
+		FVector ForceVector = NextPathPoint - CurrentPoint;
+		ForceVector.Normalize();
+
+		// Set magnitude of force
+		ForceVector *= ForceMagnitude;
+
+		// Apply force to this tracker bot
+		StaticMeshComp->AddForce(ForceVector, NAME_None, bAccelChangeInVelocity);
+	}
+
+	// Play rolling sound and set its volume based on current velocity
+	float VelocityLength = GetVelocity().Size();
+	AudioComp->SetVolumeMultiplier(UKismetMathLibrary::MapRangeClamped(VelocityLength, SoundInRangeA, SoundInRangeB, SoundOutRangeA, SoundOutRangeB));
+
+	// Add debug sphere to help visualize the next point
+	DrawDebugDirectionalArrow(GetWorld(), CurrentPoint, NextPathPoint, 40.f, FColor::Yellow);
+	DrawDebugSphere(GetWorld(), NextPathPoint, 20.f, 10.f, FColor::Yellow);
+}
+
 
 FVector ATpsTrackerBot::GetNextPathPoint()
 {
@@ -78,19 +116,12 @@ FVector ATpsTrackerBot::GetNextPathPoint()
 	// Get the navigation path
 	UNavigationPath *NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
 
-	// Get the next path point if path points is greater than 1
 	if (NavPath->PathPoints.Num() > 1)
-	{
-		// Return the next point
+		// if path points is greater than 1: Return the next point
 		return NavPath->PathPoints[1];
-	}
-	// Failed to find next path point
 	else
-	{
-		// Return current point
+		// Failed to find next path point: Return current point
 		return GetActorLocation();
-	}
-
 }
 
 
@@ -104,7 +135,7 @@ void ATpsTrackerBot::Explode()
 	IgnoredActors.Add(this);
 	UGameplayStatics::ApplyRadialDamage(this, ExplodeBaseDamage, GetActorLocation(), ExplodeRadius, nullptr, IgnoredActors, this, GetInstigatorController());
 
-	// Draw debug sphere
+	// Draw debug sphere to show radial damage
 	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplodeRadius, 12, FColor::Red, false, 2.f);
 
 	// Destroy this tracker bot and play explosion sound
@@ -142,47 +173,12 @@ void ATpsTrackerBot::HandleOnTakeDamage(UTpsHealthComponent *OwningHealthComp, f
 		MatInstance->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
 }
 
-// Called every frame
-void ATpsTrackerBot::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	// Current location of this Tracker bot
-	FVector CurrentPoint = GetActorLocation();
-
-	// Get the distance between this and target
-	float DistanceToTarget = (NextPathPoint - CurrentPoint).Size();
-
-	// If close enough to the target
-	if (DistanceToTarget <= RequiredDistanceToTarget)
-	{
-		NextPathPoint = GetNextPathPoint();
-	}
-	else
-	{
-		// Get the direction to Force to apply
-		FVector ForceDir = NextPathPoint - CurrentPoint;
-		ForceDir.Normalize();
-
-		// Set magnitude of force
-		ForceDir *= ForceMag;
-
-		// Apply force to this tracker bot
-		StaticMeshComp->AddForce(ForceDir, NAME_None, bAccelChangeInVelocity);
-	}
-
-	// Play rolling sound and set its volume based on current velocity
-	float VelocityLength = GetVelocity().Size();
-	AudioComp->SetVolumeMultiplier(UKismetMathLibrary::MapRangeClamped(VelocityLength, SoundInRangeA, SoundInRangeB, SoundOutRangeA, SoundOutRangeB));
-
-	// Add debug sphere to help visualize the next point
-	DrawDebugDirectionalArrow(GetWorld(), CurrentPoint, NextPathPoint, 40.f, FColor::Yellow);
-	DrawDebugSphere(GetWorld(), NextPathPoint, 20.f, 10.f, FColor::Yellow);
-}
-
 
 void ATpsTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 {
+	// Make sure to call parent's first
+	Super::NotifyActorBeginOverlap(OtherActor);
+
 	// See if the otherActor is a TpsCharacter
 	ATpsCharacter* PlayerCharacter = Cast<ATpsCharacter>(OtherActor);
 	if (PlayerCharacter)
