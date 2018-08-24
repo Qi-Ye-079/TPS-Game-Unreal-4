@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PowerupActor.generated.h"
 
+class UStaticMeshComponent;
+
 UCLASS()
 class TPSTUTORIAL_API APowerupActor : public AActor
 {
@@ -17,6 +19,15 @@ public:
 
 protected:
 
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void TickPowerup();
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UStaticMeshComponent* StaticMeshComp;
+
 	// Time between the powerup ticks in seconds
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float PowerupInterval;
@@ -25,16 +36,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	int32 TotalNumOfTicks;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
+	float SpeedMultiplier;
+
 	// Total number of ticks applied. if exceeding the Total number of ticks, ticking should expire
 	int32 TotalNumOfTicksProcessed;
 
+	// The timer handle for the ticking interval
 	FTimerHandle TimerHandle_PowerupTicks;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void TickPowerup();
 public:	
 
 	// Activate power up when it's picked up

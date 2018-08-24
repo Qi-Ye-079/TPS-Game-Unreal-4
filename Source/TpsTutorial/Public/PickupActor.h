@@ -9,6 +9,7 @@
 // Forward declarations
 class USphereComponent;
 class UDecalComponent;
+class APowerupActor;
 
 UCLASS()
 class TPSTUTORIAL_API APickupActor : public AActor
@@ -23,11 +24,26 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void SpawnPowerup();
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UDecalComponent* DecalComp;
+
+	// The power up actor to spawn
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	TSubclassOf<APowerupActor> PowerupClass;
+
+	// The spawned powerup actor instance
+	APowerupActor* PowerupInstance;
+
+	// The cooldown time after spawning a new powerup
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	float CooldownTime;
+
+	FTimerHandle TimerHandle_SpawnPowerup;
 
 public:	
 
