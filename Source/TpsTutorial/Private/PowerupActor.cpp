@@ -11,7 +11,7 @@ APowerupActor::APowerupActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
-	RootComponent = StaticMeshComp;
+	StaticMeshComp->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -26,11 +26,10 @@ void APowerupActor::ActivatePowerup()
 {
 	// Activate
 	OnActivated();
-	StaticMeshComp->SetVisibility(false);
 
 	// Set a timer to tick between specified interval
 	if (PowerupInterval > 0.f)
-		GetWorldTimerManager().SetTimer(TimerHandle_PowerupTicks, this, &APowerupActor::TickPowerup, PowerupInterval, true, 0.f);
+		GetWorldTimerManager().SetTimer(TimerHandle_PowerupTicks, this, &APowerupActor::TickPowerup, PowerupInterval, true);
 	else
 		TickPowerup();
 }
@@ -45,12 +44,9 @@ void APowerupActor::TickPowerup()
 	OnPowerupTicked();
 
 	// if reached total number of ticks: expire
-	if (TotalNumOfTicksProcessed > TotalNumOfTicks)
+	if (TotalNumOfTicksProcessed >= TotalNumOfTicks)
 	{
 		OnExpired();
-
-		// Remember to delete this powerup, otherwise it will remain in the scene forever
-		Destroy();
 
 		// Clear timer
 		GetWorldTimerManager().ClearTimer(TimerHandle_PowerupTicks);

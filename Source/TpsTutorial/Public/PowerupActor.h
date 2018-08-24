@@ -25,15 +25,15 @@ protected:
 	UFUNCTION()
 	void TickPowerup();
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComp;
 
 	// Time between the powerup ticks in seconds
-	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	float PowerupInterval;
 
 	// Total number of ticks to apply the powerup effect
-	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	int32 TotalNumOfTicks;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
