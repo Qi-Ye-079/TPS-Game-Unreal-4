@@ -26,14 +26,14 @@ protected:
 
 	void SpawnPowerup();
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* SphereComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UDecalComponent* DecalComp;
 
 	// The power up actor to spawn
-	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Properties")
 	TSubclassOf<APowerupActor> PowerupClass;
 
 	// The spawned powerup actor instance

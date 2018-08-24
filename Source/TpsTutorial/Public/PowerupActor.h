@@ -36,9 +36,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
 	int32 TotalNumOfTicks;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
-	float SpeedMultiplier;
-
 	// Total number of ticks applied. if exceeding the Total number of ticks, ticking should expire
 	int32 TotalNumOfTicksProcessed;
 

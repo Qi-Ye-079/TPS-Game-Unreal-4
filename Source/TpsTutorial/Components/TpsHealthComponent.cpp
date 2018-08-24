@@ -52,3 +52,17 @@ void UTpsHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
+void UTpsHealthComponent::Heal(float HealAmount)
+{
+	if (HealAmount <= 0 || CurrentHealth >= MaxHealth || CurrentHealth <= 0.f)
+		return;
+
+	// Heal the owner
+	CurrentHealth = FMath::Clamp(CurrentHealth + HealAmount, 0.f, MaxHealth);
+}
+
+float UTpsHealthComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+
