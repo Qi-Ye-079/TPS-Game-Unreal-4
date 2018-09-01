@@ -22,3 +22,5 @@ Content/Blueprints/Characters/TrackerBot/SFX
 *.user
 *.ipch
 
+Content/Animations/
+Content/Weapons-Firearms/
