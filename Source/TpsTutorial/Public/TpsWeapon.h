@@ -8,6 +8,7 @@
 
 // Forward declarations
 class USkeletalMeshComponent;
+class UStaticMeshComponent;
 class UParticleSystem;
 class UDamageType;
 
@@ -38,7 +39,8 @@ protected:
 
 	// The mesh component of this weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* MeshComp;
+	UStaticMeshComponent* MeshComp;
+	//USkeletalMeshComponent* MeshComp;
 
 	// The Muzzle effect of this weapon when firing
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
@@ -74,6 +76,10 @@ protected:
 	// The number of fires per second. Default is 10
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
 	float FireRatePerSecond;
+
+	// Set the static mesh component for this weapon (in BP).
+	UFUNCTION(BlueprintCallable, Category = Functions)
+	void SetStaticMeshComponent(UStaticMeshComponent* StaticMeshComp);
 
 
 public:	

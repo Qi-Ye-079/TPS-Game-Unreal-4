@@ -2,6 +2,7 @@
 
 #include "TpsWeapon.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "CollisionQueryParams.h"
 #include "Engine/World.h"
 #include "Camera/CameraComponent.h"
@@ -18,9 +19,7 @@ ATpsWeapon::ATpsWeapon()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Create the skeletal mesh and make it root component
-	MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
-	RootComponent = MeshComp;
+
 }
 
 // Called when the game starts or when spawned
@@ -28,6 +27,13 @@ void ATpsWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
+}
+
+
+void ATpsWeapon::SetStaticMeshComponent(UStaticMeshComponent* StaticMeshComp)
+{
+	MeshComp = StaticMeshComp;
 }
 
 // Called every frame
@@ -42,6 +48,7 @@ void ATpsWeapon::Fire(bool bHit, const FHitResult& HitRes, const FVector& TraceE
 {
 	// 1. Get muzzle location and EndPoint; draw a debug line to help visualize the tracing line
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+	// UE_LOG(LogTemp, Error, TEXT("Muzzle socket location: %s"), *MuzzleLocation.ToString());
 	FVector EndPoint = bHit ? HitRes.ImpactPoint : TraceEnd;
 	//DrawDebugLine(GetWorld(), MuzzleLocation, EndPoint, FColor::Red, false, 1.f, 0, 1.f);
 

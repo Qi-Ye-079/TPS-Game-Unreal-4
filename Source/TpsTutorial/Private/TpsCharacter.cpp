@@ -158,17 +158,25 @@ void ATpsCharacter::EndShoot()
 
 void ATpsCharacter::ZoomIn()
 {
+	// Change all properties for aiming
 	bAiming = true;
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->MaxWalkSpeed *= 0.5f;
+	GetMesh()->AddLocalRotation(FRotator(0.f, 5.f, 0.f));
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Rifle_Aiming"));
 }
 
 
 void ATpsCharacter::ZoomOut()
 {
+	// Restore all default settings for player
 	bAiming = false;
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxWalkSpeed *= 2.f;
+	GetMesh()->AddLocalRotation(FRotator(0.f, -5.f, 0.f));
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
 }
 
 
@@ -269,14 +277,11 @@ void ATpsCharacter::SpawnWeapon()
 
 	// Spawn the actor (weapon)
 	CurrentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
-	if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
+	if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket_Idle")))
 	{
 		// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
 		// And Weld Simulated Bodies set to true
-		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
-
-		// Attach weapon to the WeaponSocket
-		CurrentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
 	}
 	else
 	{
