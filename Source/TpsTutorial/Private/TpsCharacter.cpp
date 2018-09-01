@@ -66,37 +66,8 @@ void ATpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// If no weapon to spawn, return
-	if (!WeaponClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("No Weapon class assigned. Pls do so in BP editor."));
-		return;
-	}
-
-	// Get transformation of spawned actor (values not important because it will be attached 
-	// to character's weapon socket later
-	FTransform transform;
-
-	// Get the spawn parameters
-	FActorSpawnParameters params;
-	params.Owner = this;
-	params.Instigator = Instigator;
-
-	// Spawn the actor (weapon)
-	CurrentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
-	if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
-	{
-		// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
-		// And Weld Simulated Bodies set to true
-		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
-
-		// Attach weapon to the WeaponSocket
-		CurrentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("No socket named WeaponSocket!!! Please create one."));
-	}
+	// Spawn weapons
+	SpawnWeapon();
 
 	// Create crosshair and health indicator widgets (implemented in BP)
 	CreateCrosshairWidgetEvent();
@@ -130,18 +101,15 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Bind camera input
 	PlayerInputComponent->BindAxis("Lookup", this, &ATpsCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Turn", this, &ATpsCharacter::AddControllerYawInput);
-	// Then go to UE4 Project Settings -> Input -> axis mappings to create axis inputs.
 
 	// Bind actions(NOTE: cannot directly use Crouch() and UnCrouch() function here. Why??)
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATpsCharacter::BeginCrouch);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATpsCharacter::EndCrouch);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::StartShoot);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATpsCharacter::EndShoot);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATpsCharacter::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATpsCharacter::ZoomOut);
 }
 
-
+// Move forward or backward
 void ATpsCharacter::MoveForward(float axisValue)
 {
 	// Get the direction of the controller
@@ -154,7 +122,7 @@ void ATpsCharacter::MoveForward(float axisValue)
 	AddMovementInput(forward, axisValue);
 }
 
-
+// Move left or right
 void ATpsCharacter::MoveRight(float axisValue)
 {
 	// Get the direction to the right of the controller
@@ -166,19 +134,7 @@ void ATpsCharacter::MoveRight(float axisValue)
 	AddMovementInput(right, axisValue);
 }
 
-
-void ATpsCharacter::BeginCrouch()
-{
-	Crouch(); // Built-in function
-}
-
-
-void ATpsCharacter::EndCrouch()
-{
-	UnCrouch(); // Built-in function
-}
-
-
+// Set timer and start shooting
 void ATpsCharacter::StartShoot()
 {
 	// Check if the weapon is automatic and get its fire rate
@@ -189,10 +145,10 @@ void ATpsCharacter::StartShoot()
 	float FirstDelay = FMath::Max(LastFireTime + FirePeriod - GetWorld()->TimeSeconds, 0.f);
 
 	// Keeps shooting weapon at the desired rate
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATpsCharacter::ShootWeapon, FirePeriod, bLoop, FirstDelay);
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATpsCharacter::Fire, FirePeriod, bLoop, FirstDelay);
 }
 
-
+// Clear timer to stop shooting
 void ATpsCharacter::EndShoot()
 {
 	// Clear the timer handler
@@ -216,41 +172,17 @@ void ATpsCharacter::ZoomOut()
 }
 
 
-void ATpsCharacter::ShootWeapon()
+void ATpsCharacter::Fire()
 {
 	// Fire only when zooming in
 	if (!bAiming)
 		return;
 
-	// ======= Step 1: Do single line tracing and fire weapon ========
-	// Get the location and rotation of from camera's view
-	FVector CamLocation;
-	FRotator CamRotation;
-	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
+	// Do single line tracing by Weapon channel and fire weapon ========
+	ShootWeaponFromLineTraceChannel(ECollisionChannel::COLLISION_WEAPON);
 
-	// Get the end location of tracing line with a large distance
-	FVector& StartLocation = CamLocation;
-	FVector  EndLocation = CamLocation + CamRotation.Vector() * 10000.f;
-
-	// Better to specify the Collision Query Parameters as well
-	// For a precise hit point; more costly but looks way more natural
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(CurrentWeapon);
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.bTraceComplex = true;
-	QueryParams.bReturnPhysicalMaterial = true; // Important!!!
-
-	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line
-	// Note that the hit actor's collision should be enabled, especially the traced channel
-	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, COLLISION_WEAPON, QueryParams);
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->Fire(bHit, HitResult, EndLocation);
-	}
-
-	// ======= Step 2: Add camera shake effect ========
 	// Add camera shake effect
+	/*
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && CamShakeClass)
 	{
@@ -259,6 +191,7 @@ void ATpsCharacter::ShootWeapon()
 
 	// Crucial: update the time of last shot for proper automatic fire
 	LastFireTime = GetWorld()->TimeSeconds;
+	*/
 }
 
 
@@ -280,5 +213,74 @@ void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, fl
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Then play death animation. To be done in Animation BP...
+}
+
+/*
+	Helper functions
+ */
+ // Helper function: Do single line trace by channel, determine end location, and fire weapon
+void ATpsCharacter::ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChannel)
+{
+	// Get the location and rotation of from camera's view
+	FVector CamLocation;
+	FRotator CamRotation;
+	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
+
+	// Get the end location of tracing line with a large distance
+	FVector& StartLocation = CamLocation;
+	FVector  EndLocation = CamLocation + CamRotation.Vector() * 10000.f;
+
+	// Better to specify the Collision Query Parameters as well
+	// For a precise hit point; more costly but looks way more natural
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(CurrentWeapon);
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.bTraceComplex = true;
+	QueryParams.bReturnPhysicalMaterial = true; // Important!!!
+
+	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line
+	// Note that the hit actor's collision should be enabled, especially the traced channel
+	FHitResult HitResult;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, TraceChannel, QueryParams);
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire(bHit, HitResult, EndLocation);
+	}
+}
+
+// Spawn the weapon at the right socket
+void ATpsCharacter::SpawnWeapon()
+{
+	// If no weapon to spawn, return
+	if (!WeaponClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No Weapon class assigned. Pls do so in BP editor."));
+		return;
+	}
+
+	// Get transformation of spawned actor (values not important because it will be attached 
+	// to character's weapon socket later
+	FTransform transform;
+
+	// Get the spawn parameters
+	FActorSpawnParameters params;
+	params.Owner = this;
+	params.Instigator = Instigator;
+
+	// Spawn the actor (weapon)
+	CurrentWeapon = Cast<ATpsWeapon>(GetWorld()->SpawnActor(WeaponClass, &transform, params));
+	if (CurrentWeapon && GetMesh()->GetSocketByName(TEXT("WeaponSocket")))
+	{
+		// Location Rule, Rotation Rule and Scale Rule all set to Snap to target
+		// And Weld Simulated Bodies set to true
+		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+
+		// Attach weapon to the WeaponSocket
+		CurrentWeapon->AttachToComponent(GetMesh(), rules, TEXT("WeaponSocket"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No socket named WeaponSocket!!! Please create one."));
+	}
 }
 
