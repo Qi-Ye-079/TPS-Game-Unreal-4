@@ -204,6 +204,7 @@ void ATpsCharacter::ZoomIn()
 {
 	bAiming = true;
 	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 
@@ -211,6 +212,7 @@ void ATpsCharacter::ZoomOut()
 {
 	bAiming = false;
 	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 
