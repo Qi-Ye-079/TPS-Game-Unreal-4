@@ -11,6 +11,13 @@ class USkeletalMeshComponent;
 class UParticleSystem;
 class UDamageType;
 
+// Enum to define the weapon typs
+UENUM()
+enum class EWeaponType: uint8
+{
+	EWT_Pistol,	EWT_Rifle 
+};
+
 UCLASS()
 class TPSTUTORIAL_API ATpsWeapon : public AActor
 {
@@ -53,16 +60,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Effects")
 	TSubclassOf<UDamageType> DamageType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
+	EWeaponType WeaponType;
+
 	// Is this an automatic weapon. Default is false.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
 	bool bAuto;
 
 	// Base damage of this weapon. Default is 20
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
 	float BaseDamage;
 
 	// The number of fires per second. Default is 10
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
 	float FireRatePerSecond;
 
 

@@ -32,30 +32,33 @@ protected:
 
 	// Shoot weapon function; will be looping if the current weapon is automatic
 	UFUNCTION(BlueprintCallable)
-	void ShootWeapon();
+	void Fire();
 
 	// dynamic delegate function on health changed
 	UFUNCTION()
 	void HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	// Create the crosshair widget in BP
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, Category = BlueprintEvents)
 	void CreateCrosshairWidgetEvent();
 
 	// Create the health indicator widget in BP
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, Category = BlueprintEvents)
 	void CreateHealthIndicatorEvent();
 
-	// Bind axis inputs
+	// Bind axis and action inputs
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
-	//BInd action
-	void BeginCrouch();
-	void EndCrouch();
 	void StartShoot();
 	void EndShoot();
 	void ZoomIn();
 	void ZoomOut();
+
+	// Helper function: Do single line trace by channel, determine end location, and fire weapon
+	void ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChannel);
+
+	// Helper function: Spawn the weapon at the right socket
+	void SpawnWeapon();
 
 	// ================ VARIABLES ================
 	// Main camera component
@@ -94,7 +97,7 @@ protected:
 	float DefaultFov;
 
 	// The height when zoom in
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	UPROPERTY(BlueprintReadOnly, Category = "Camera Zoom")
 	float ZoomHeight;
 
 	// Whether the character is dead or not
