@@ -183,7 +183,7 @@ void ATpsCharacter::ZoomOut()
 void ATpsCharacter::Fire()
 {
 	// Fire only when zooming in
-	if (!bAiming)
+	if (!bAiming || !CurrentWeapon)
 		return;
 
 	// Do single line tracing by Weapon channel and fire weapon ========
@@ -250,10 +250,7 @@ void ATpsCharacter::ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChann
 	// Note that the hit actor's collision should be enabled, especially the traced channel
 	FHitResult HitResult;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, TraceChannel, QueryParams);
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->Fire(bHit, HitResult, EndLocation);
-	}
+	bHit ? CurrentWeapon->Fire(HitResult.ImpactPoint) : CurrentWeapon->Fire(EndLocation);
 }
 
 // Spawn the weapon at the right socket

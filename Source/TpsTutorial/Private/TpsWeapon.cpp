@@ -12,6 +12,7 @@
 #include "Particles/ParticleSystem.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "TpsProjectile.h"
 
 // Sets default values
 ATpsWeapon::ATpsWeapon()
@@ -44,33 +45,52 @@ void ATpsWeapon::Tick(float DeltaTime)
 }
 
 
-void ATpsWeapon::Fire(bool bHit, const FHitResult& HitRes, const FVector& TraceEnd)
+void ATpsWeapon::Fire(const FVector& EndLocation)
 {
+	// If no mesh: simply return
+	if (!MeshComp)
+	{
+		UE_LOG(LogTemp, Error, TEXT("This weapon has no mesh component! Please check BP."));
+		return;
+	}
+
 	// 1. Get muzzle location and EndPoint; draw a debug line to help visualize the tracing line
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+
 	// UE_LOG(LogTemp, Error, TEXT("Muzzle socket location: %s"), *MuzzleLocation.ToString());
-	FVector EndPoint = bHit ? HitRes.ImpactPoint : TraceEnd;
+	// FVector EndPoint = bHit ? HitRes.ImpactPoint : EndLocation;
 	//DrawDebugLine(GetWorld(), MuzzleLocation, EndPoint, FColor::Red, false, 1.f, 0, 1.f);
 
-	if (MeshComp)
-	{
-		// 2. Apply particle effect on the muzzle
-		if (MuzzleEffect)
-			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, TEXT("MuzzleFlashSocket"));
+	// 2. Get the rotation of launching projectile
+	FVector LaunchDirection = (EndLocation - MuzzleLocation).GetSafeNormal();
 
-		// 3. Apply smoke effect
-		if (TracerEffect)
+	// 3. Spawn and launch projectile
+	FActorSpawnParameters ProjectileSpawnParams;
+	ProjectileSpawnParams.Instigator = Instigator;
+	ProjectileSpawnParams.Owner = this;
+	ProjectileSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ATpsProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ATpsProjectile>(ProjectileClass, MuzzleLocation, LaunchDirection.Rotation(), ProjectileSpawnParams);
+	if (SpawnedProjectile)
+	{
+		SpawnedProjectile->Launch(LaunchDirection * InitialBulletSpeed);
+	}
+
+	// 2. Apply particle effect on the muzzle
+	if (MuzzleEffect)
+		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, TEXT("MuzzleFlashSocket"));
+
+	// 3. Apply smoke effect
+	if (TracerEffect)
+	{
+		UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerEffect, MuzzleLocation);
+		if (TracerBeam)
 		{
-			FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-			UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerEffect, MuzzleLocation);
-			if (TracerBeam)
-			{
-				//const FVector& EndPoint = IsHit ? HitRes.ImpactPoint : EndLocation;
-				TracerBeam->SetVectorParameter("BeamEnd", EndPoint);
-			}
+			//const FVector& EndPoint = IsHit ? HitRes.ImpactPoint : EndLocation;
+			TracerBeam->SetVectorParameter("BeamEnd", EndLocation);
 		}
 	}
 
+	/*
 	// 4. Handle impact effect and damage
 	float ActualDamage = BaseDamage;
 	// Select the impact effect type
@@ -105,6 +125,8 @@ void ATpsWeapon::Fire(bool bHit, const FHitResult& HitRes, const FVector& TraceE
 		UGameplayStatics::ApplyPointDamage(HitRes.GetActor(), ActualDamage, HitFromDirection, HitRes, EventInstigator, this, DamageType);
 		DrawDebugString(GetWorld(), HitRes.ImpactPoint, FString::SanitizeFloat(ActualDamage), nullptr, FColor::White, 2.f);
 	}
+	*/
+	
 }
 
 bool ATpsWeapon::IsAutomatic() const

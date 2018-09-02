@@ -11,6 +11,7 @@ class USkeletalMeshComponent;
 class UStaticMeshComponent;
 class UParticleSystem;
 class UDamageType;
+class ATpsProjectile;
 
 // Enum to define the weapon typs
 UENUM()
@@ -33,6 +34,10 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Set the static mesh component for this weapon (in BP).
+	UFUNCTION(BlueprintCallable, Category = Functions)
+	void SetStaticMeshComponent(UStaticMeshComponent* StaticMeshComp);
 
 
 	// =============== Variables =====================
@@ -62,6 +67,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Effects")
 	TSubclassOf<UDamageType> DamageType;
 
+	// The projectile class to spawn
+	UPROPERTY(EditDefaultsOnly, Category = "Key Properties")
+	TSubclassOf<ATpsProjectile> ProjectileClass;
+
+	// The type of this weapon: pistol or rifle
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
 	EWeaponType WeaponType;
 
@@ -77,9 +87,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Key Properties")
 	float FireRatePerSecond;
 
-	// Set the static mesh component for this weapon (in BP).
-	UFUNCTION(BlueprintCallable, Category = Functions)
-	void SetStaticMeshComponent(UStaticMeshComponent* StaticMeshComp);
+	// The initial speed of bullet from this weapon
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Properties")
+	float InitialBulletSpeed;
 
 
 public:	
@@ -88,7 +98,7 @@ public:
 
 	// The fire function of this weapon
 	UFUNCTION(BlueprintCallable)
-	virtual void Fire(bool bHit, const FHitResult& HitRes, const FVector& TraceEnd);
+	virtual void Fire(const FVector& EndLocation);
 
 	// Return if this weapon is automatic or not
 	bool IsAutomatic() const;
