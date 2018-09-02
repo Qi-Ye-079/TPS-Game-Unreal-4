@@ -37,10 +37,9 @@ void ATpsProjectile::Tick(float DeltaTime)
 }
 
 
-void ATpsProjectile::Launch(const FVector& Velocity)
+void ATpsProjectile::Launch(float LaunchSpeed)
 {
-	ProjectileMoveComp->SetVelocityInLocalSpace(Velocity);
+	ProjectileMoveComp->SetVelocityInLocalSpace(FVector::ForwardVector * LaunchSpeed);
 	ProjectileMoveComp->Activate();
-	UE_LOG(LogTemp, Warning, TEXT("Launched: %s"), *Velocity.ToString());
 }
 

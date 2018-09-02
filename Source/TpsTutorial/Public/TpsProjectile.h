@@ -35,6 +35,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Launch the projectile
-	void Launch(const FVector& Velocity);
+	void Launch(float LaunchSpeed);
 	
 };

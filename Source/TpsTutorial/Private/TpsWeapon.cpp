@@ -59,7 +59,7 @@ void ATpsWeapon::Fire(const FVector& EndLocation)
 
 	// UE_LOG(LogTemp, Error, TEXT("Muzzle socket location: %s"), *MuzzleLocation.ToString());
 	// FVector EndPoint = bHit ? HitRes.ImpactPoint : EndLocation;
-	//DrawDebugLine(GetWorld(), MuzzleLocation, EndPoint, FColor::Red, false, 1.f, 0, 1.f);
+	DrawDebugLine(GetWorld(), MuzzleLocation, EndLocation, FColor::Red, false, 1.f, 0, 1.f);
 
 	// 2. Get the rotation of launching projectile
 	FVector LaunchDirection = (EndLocation - MuzzleLocation).GetSafeNormal();
@@ -72,7 +72,7 @@ void ATpsWeapon::Fire(const FVector& EndLocation)
 	ATpsProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ATpsProjectile>(ProjectileClass, MuzzleLocation, LaunchDirection.Rotation(), ProjectileSpawnParams);
 	if (SpawnedProjectile)
 	{
-		SpawnedProjectile->Launch(LaunchDirection * InitialBulletSpeed);
+		SpawnedProjectile->Launch(InitialBulletSpeed);
 	}
 
 	// 2. Apply particle effect on the muzzle
