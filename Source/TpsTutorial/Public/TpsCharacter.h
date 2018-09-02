@@ -14,6 +14,13 @@ class UTpsHealthComponent;
 class UDamageType;
 class AController;
 class UInputComponent;
+class UAnimMontage;
+
+UENUM()
+enum class WeaponId : uint8
+{
+	LEFT_WEAPON, RIGHT_WEAPON
+};
 
 UCLASS()
 class TPSTUTORIAL_API ATpsCharacter : public ACharacter
@@ -46,6 +53,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = BlueprintEvents)
 	void CreateHealthIndicatorEvent();
 
+	UFUNCTION(BlueprintCallable)
+	void SwapWeaponImplementation();
+
 	// Bind axis and action inputs
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
@@ -53,12 +63,19 @@ protected:
 	void EndShoot();
 	void ZoomIn();
 	void ZoomOut();
+	void SwapWeapon();
 
 	// Helper function: Do single line trace by channel, determine end location, and fire weapon
 	void ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChannel);
 
 	// Helper function: Spawn the weapon at the right socket
 	void SpawnWeapon();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
+	void ZoomInCamera();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
+	void ZoomOutCamera();
 
 	// ================ VARIABLES ================
 	// Main camera component
@@ -73,9 +90,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTpsHealthComponent* HealthComp;
 
-	// The weapon class to spawn the weapon
+	// The weapon class to spawn on the left back of character
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<ATpsWeapon> WeaponClass;
+	TSubclassOf<ATpsWeapon> LeftWeaponClass;
+
+	// The weapon class to spawn on the right back of character
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<ATpsWeapon> RightWeaponClass;
+
+	// The spawned 2 weapon instances and the currently equipped weapon
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	TArray<ATpsWeapon*> EquippedWeapons;
+	int8 CurrentWeaponIndex;
+
+	// The animation montage to play when swapping weapons
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* WeaponSwapMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> CamShakeClass;
@@ -96,16 +126,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
 	float DefaultFov;
 
-	// The height when zoom in
-	UPROPERTY(BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomHeight;
+	// If the player is walking forward
+	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	bool bWalkingForward;
+
+	// If the player is walking right
+	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	bool bWalkingRight;
 
 	// Whether the character is dead or not
-	UPROPERTY(BlueprintReadOnly, Category = "Player Status")
+	UPROPERTY(BlueprintReadOnly, Category = "Status")
 	bool bDead;
-
-	// The spawned weapon instance
-	ATpsWeapon* CurrentWeapon;
 
 	// The timer handler for shooting weapon
 	FTimerHandle TimerHandle;
