@@ -75,11 +75,11 @@ void ATpsWeapon::Fire(const FVector& EndLocation)
 		SpawnedProjectile->Launch(InitialBulletSpeed);
 	}
 
-	// 2. Apply particle effect on the muzzle
+	// 4. Apply particle effect on the muzzle
 	if (MuzzleEffect)
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, TEXT("MuzzleFlashSocket"));
 
-	// 3. Apply smoke effect
+	// 5. Apply smoke effect
 	if (TracerEffect)
 	{
 		UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerEffect, MuzzleLocation);
@@ -89,52 +89,15 @@ void ATpsWeapon::Fire(const FVector& EndLocation)
 			TracerBeam->SetVectorParameter("BeamEnd", EndLocation);
 		}
 	}
-
-	/*
-	// 4. Handle impact effect and damage
-	float ActualDamage = BaseDamage;
-	// Select the impact effect type
-	if (bHit)
-	{
-		EPhysicalSurface HitPhysicalSurf = UPhysicalMaterial::DetermineSurfaceType(HitRes.PhysMaterial.Get());
-		UParticleSystem* CurrentImpactEffect = nullptr;
-
-		switch (HitPhysicalSurf)
-		{
-		case Flesh_Vulnerable:
-			// If head shot: 5x more damage
-			ActualDamage *= 5.f;
-		case Flesh_default:
-			CurrentImpactEffect = FleshImpactEffect;
-			break;
-		default:
-			CurrentImpactEffect = DefaultImpactEffect;
-			break;
-		}
-
-		// Spawn the blood effect on the hit actor
-		if (CurrentImpactEffect)
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CurrentImpactEffect, HitRes.ImpactPoint, HitRes.ImpactNormal.Rotation());
-	}
-
-	// 5. Get the player controller who shot the weapon and apply damage to the actor who is hit
-	AController* EventInstigator = GetOwner()->GetInstigatorController();
-	if (EventInstigator && bHit)
-	{
-		const FVector HitFromDirection = EndPoint - MuzzleLocation;
-		UGameplayStatics::ApplyPointDamage(HitRes.GetActor(), ActualDamage, HitFromDirection, HitRes, EventInstigator, this, DamageType);
-		DrawDebugString(GetWorld(), HitRes.ImpactPoint, FString::SanitizeFloat(ActualDamage), nullptr, FColor::White, 2.f);
-	}
-	*/
 	
 }
 
-bool ATpsWeapon::IsAutomatic() const
+FORCEINLINE bool ATpsWeapon::IsAutomatic() const
 {
 	return bAuto;
 }
 
-float ATpsWeapon::GetFireRatePerSecond() const
+FORCEINLINE float ATpsWeapon::GetFireRatePerSecond() const
 {
 	return FireRatePerSecond;
 }

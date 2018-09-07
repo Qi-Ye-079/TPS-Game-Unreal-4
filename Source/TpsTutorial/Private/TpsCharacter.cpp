@@ -21,9 +21,7 @@ ATpsCharacter::ATpsCharacter()
 	,ZoomInFov(30.f)
 	,DefaultFov(70.f)
 	,bDead(false)
-	,bWalkingForward(false)
-	,bWalkingRight(false)
-	,CurrentWeaponIndex(-1)
+	,CurrentWeaponID(EWeaponID::None)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -72,9 +70,8 @@ void ATpsCharacter::BeginPlay()
 	// Spawn weapons
 	SpawnWeapon();
 
-	// Create crosshair and health indicator widgets (implemented in BP)
+	// Create crosshair widgets (implemented in BP)
 	CreateCrosshairWidgetEvent();
-	CreateHealthIndicatorEvent();
 }
 
 // Called every frame
@@ -90,8 +87,8 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	// Bind forward and right input axis to the corresponding functions.
-	PlayerInputComponent->BindAxis("MoveForward", this, &ATpsCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ATpsCharacter::MoveRight);
+	//PlayerInputComponent->BindAxis("MoveForward", this, &ATpsCharacter::MoveForward);
+	//PlayerInputComponent->BindAxis("MoveRight", this, &ATpsCharacter::MoveRight);
 
 	// Bind camera input
 	PlayerInputComponent->BindAxis("Lookup", this, &ATpsCharacter::AddControllerPitchInput);
@@ -105,75 +102,12 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Swap", IE_Pressed, this, &ATpsCharacter::SwapWeapon);
 }
 
-// Move forward or backward
-void ATpsCharacter::MoveForward(float axisValue)
-{
-	if (axisValue == 0.f)
-	{
-		// Set walking
-		bWalkingForward = false;
-		return;
-	}
-
-	// Set axis value either 0.5f or 1.f
-	if (axisValue < 0.f)
-	{
-		axisValue = (axisValue >= -0.5f) ? -0.5f : -1.f;
-	}
-	else
-	{
-		axisValue = (axisValue <= 0.5f) ? 0.5f : 1.f;
-	}
-
-	// Get the direction of the controller
-	const FRotator ControllerRotation = GetControlRotation();
-
-	// Get the forward vector
-	const FVector forward = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::X);
-
-	// Apply the forward vector to input
-	AddMovementInput(forward, axisValue);
-
-	bWalkingForward = true;
-}
-
-// Move left or right
-void ATpsCharacter::MoveRight(float axisValue)
-{
-	if (axisValue == 0.f)
-	{
-		// Set walking
-		bWalkingRight = false;
-		return;
-	}
-
-	// Set axis value either 0.5f or 1.f
-	if (axisValue < 0.f)
-	{
-		axisValue = (FMath::Abs(axisValue) <= 0.5f) ? -0.5f : -1.f;
-	}
-	else
-	{
-		axisValue = (axisValue <= 0.5f) ? 0.5f : 1.f;
-	}
-
-	// Get the direction to the right of the controller
-	const FRotator ControllerRotation = GetControlRotation();
-
-	// Get the right vector
-	const FVector right = FRotationMatrix(ControllerRotation).GetUnitAxis(EAxis::Y);
-
-	AddMovementInput(right, axisValue);
-
-	bWalkingRight = true;
-}
-
 // Set timer and start shooting
 void ATpsCharacter::StartShoot()
 {
 	// Check if the weapon is automatic and get its fire rate
-	bool bLoop = EquippedWeapons[CurrentWeaponIndex]->IsAutomatic();
-	float FirePeriod = 1.f / (EquippedWeapons[CurrentWeaponIndex]->GetFireRatePerSecond());
+	bool bLoop = EquippedWeapons[CurrentWeaponID]->IsAutomatic();
+	float FirePeriod = 1.f / (EquippedWeapons[CurrentWeaponID]->GetFireRatePerSecond());
 
 	// Determine the first delay of pressing the mouse
 	float FirstDelay = FMath::Max(LastFireTime + FirePeriod - GetWorld()->TimeSeconds, 0.f);
@@ -198,7 +132,7 @@ void ATpsCharacter::ZoomIn()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed *= 0.35f;
 	GetMesh()->AddLocalRotation(FRotator(0.f, 5.f, 0.f));
-	EquippedWeapons[CurrentWeaponIndex]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Rifle_Aiming"));
+	EquippedWeapons[CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Rifle_Aiming"));
 
 	// Use timeline to zoom in camera in BP
 	ZoomInCamera();
@@ -213,7 +147,7 @@ void ATpsCharacter::ZoomOut()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed *= (1.f / 0.35f);
 	GetMesh()->AddLocalRotation(FRotator(0.f, -5.f, 0.f));
-	EquippedWeapons[CurrentWeaponIndex]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
+	EquippedWeapons[CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
 
 	// Use timeline to zoom out camera in BP
 	ZoomOutCamera();
@@ -222,6 +156,8 @@ void ATpsCharacter::ZoomOut()
 
 void ATpsCharacter::SwapWeapon()
 {
+	if (EquippedWeapons.Num() < 2) return;
+
 	// Play weapon swapping montage
 	if (WeaponSwapMontage)
 	{
@@ -230,40 +166,36 @@ void ATpsCharacter::SwapWeapon()
 }
 
 
-void ATpsCharacter::SwapWeaponImplementation()
+void ATpsCharacter::SwapWeaponAction()
 {
 	// Attach the equipped weapon to the right back
-	EquippedWeapons[CurrentWeaponIndex]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("Weapon_Holster_Right"));
+	EquippedWeapons[CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("Weapon_Holster_Right"));
 
-	// Attach the next weapon to the hand
-	EquippedWeapons[1 - CurrentWeaponIndex]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
+	// Equip the back weapon to the hand
+	EquippedWeapons[1 - CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
 
 	// Update current weapon index
-	CurrentWeaponIndex = 1 - CurrentWeaponIndex;
+	CurrentWeaponID = static_cast<EWeaponID>(1 - CurrentWeaponID);
 }
-
 
 
 void ATpsCharacter::Fire()
 {
 	// Fire only when zooming in
-	if (!bAiming || CurrentWeaponIndex == -1)
+	if (!bAiming || CurrentWeaponID == EWeaponID::None)
 		return;
 
 	// Do single line tracing by Weapon channel and fire weapon ========
-	ShootWeaponFromLineTraceChannel(ECollisionChannel::COLLISION_WEAPON);
-
-	// Add camera shake effect
-	/*
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (PlayerController && CamShakeClass)
-	{
-		PlayerController->ClientPlayCameraShake(CamShakeClass);
-	}
+	FVector TraceEndLocation;
+	FHitResult HitResult;
+	bool bHit = LineTraceFromCameraByChannel(HitResult, TraceEndLocation, ECollisionChannel::COLLISION_WEAPON);
+	bHit? EquippedWeapons[CurrentWeaponID]->Fire(HitResult.ImpactPoint) : EquippedWeapons[CurrentWeaponID]->Fire(TraceEndLocation);
 
 	// Crucial: update the time of last shot for proper automatic fire
 	LastFireTime = GetWorld()->TimeSeconds;
-	*/
+
+	// Play the firing animation
+	if (FireWeaponMontage)	PlayAnimMontage(FireWeaponMontage);
 }
 
 
@@ -291,7 +223,7 @@ void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, fl
 	Helper functions
  */
  // Helper function: Do single line trace by channel, determine end location, and fire weapon
-void ATpsCharacter::ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChannel)
+bool ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, FVector& EndLocation, ECollisionChannel TraceChannel)
 {
 	// Get the location and rotation of from camera's view
 	FVector CamLocation;
@@ -299,22 +231,19 @@ void ATpsCharacter::ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChann
 	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
 
 	// Get the end location of tracing line with a large distance
-	FVector& StartLocation = CamLocation;
-	FVector  EndLocation = CamLocation + CamRotation.Vector() * 10000.f;
+	EndLocation = CamLocation + CamRotation.Vector() * 50000.f;
 
 	// Better to specify the Collision Query Parameters as well
 	// For a precise hit point; more costly but looks way more natural
 	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(EquippedWeapons[CurrentWeaponIndex]);
+	QueryParams.AddIgnoredActor(EquippedWeapons[CurrentWeaponID]);
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.bTraceComplex = true;
 	QueryParams.bReturnPhysicalMaterial = true; // Important!!!
 
 	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line
 	// Note that the hit actor's collision should be enabled, especially the traced channel
-	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, TraceChannel, QueryParams);
-	bHit ? EquippedWeapons[CurrentWeaponIndex]->Fire(HitResult.ImpactPoint) : EquippedWeapons[CurrentWeaponIndex]->Fire(EndLocation);
+	return GetWorld()->LineTraceSingleByChannel(HitResult, CamLocation, EndLocation, TraceChannel, QueryParams);
 }
 
 // Spawn the weapon at the right socket
@@ -337,7 +266,7 @@ void ATpsCharacter::SpawnWeapon()
 	params.Instigator = Instigator;
 
 	// Spawn the actor (weapon)
-	for (uint8 i = 0; i < 2; i++)
+	for (uint8 i = 0; i < 1; i++)
 	{
 		// Get which class to spawn and socket name
 		TSubclassOf<ATpsWeapon>& ClassToSpawn = (i == 0) ? LeftWeaponClass : RightWeaponClass;
@@ -361,6 +290,6 @@ void ATpsCharacter::SpawnWeapon()
 	}
 
 	// Set the first spawned weapon as equipped
-	CurrentWeaponIndex = 0;
+	CurrentWeaponID = EWeaponID::LeftWeapon;
 }
 

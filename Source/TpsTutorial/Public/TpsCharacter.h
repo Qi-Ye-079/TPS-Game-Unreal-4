@@ -17,9 +17,9 @@ class UInputComponent;
 class UAnimMontage;
 
 UENUM()
-enum class WeaponId : uint8
+enum EWeaponID
 {
-	LEFT_WEAPON, RIGHT_WEAPON
+	None = -1, LeftWeapon, RightWeapon
 };
 
 UCLASS()
@@ -49,16 +49,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = BlueprintEvents)
 	void CreateCrosshairWidgetEvent();
 
-	// Create the health indicator widget in BP
-	UFUNCTION(BlueprintImplementableEvent, Category = BlueprintEvents)
-	void CreateHealthIndicatorEvent();
-
 	UFUNCTION(BlueprintCallable)
-	void SwapWeaponImplementation();
+	void SwapWeaponAction();
 
 	// Bind axis and action inputs
-	void MoveForward(float axisValue);
-	void MoveRight(float axisValue);
 	void StartShoot();
 	void EndShoot();
 	void ZoomIn();
@@ -66,7 +60,7 @@ protected:
 	void SwapWeapon();
 
 	// Helper function: Do single line trace by channel, determine end location, and fire weapon
-	void ShootWeaponFromLineTraceChannel(ECollisionChannel TraceChannel);
+	bool LineTraceFromCameraByChannel(FHitResult& HitResult, FVector& EndLocation, ECollisionChannel TraceChannel);
 
 	// Helper function: Spawn the weapon at the right socket
 	void SpawnWeapon();
@@ -101,14 +95,15 @@ protected:
 	// The spawned 2 weapon instances and the currently equipped weapon
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<ATpsWeapon*> EquippedWeapons;
-	int8 CurrentWeaponIndex;
+	EWeaponID CurrentWeaponID;
 
 	// The animation montage to play when swapping weapons
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UAnimMontage* WeaponSwapMontage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<UCameraShake> CamShakeClass;
+	// TThe weapon firing animation montage 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* FireWeaponMontage;
 
 	// Whether the player is zooming in
 	UPROPERTY(BlueprintReadOnly, Category = "Camera Zoom")
@@ -125,14 +120,6 @@ protected:
 	// The default FOV
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
 	float DefaultFov;
-
-	// If the player is walking forward
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
-	bool bWalkingForward;
-
-	// If the player is walking right
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
-	bool bWalkingRight;
 
 	// Whether the character is dead or not
 	UPROPERTY(BlueprintReadOnly, Category = "Status")

@@ -9,7 +9,32 @@
 // Forward declarations
 class USphereComponent;
 class UDecalComponent;
+class USkeletalMeshComponent;
 class APowerupActor;
+class ATpsCharacter;
+
+UENUM(BlueprintType)
+enum class EPickupType: uint8
+{
+	None	UMETA(DisplayName = "None"), 
+	Weapon	UMETA(DisplayName = "Weapon"), 
+	Powerup	UMETA(DisplayName = "Powerup")
+};
+
+UENUM(BlueprintType)
+enum class EWeapon: uint8
+{
+	None	UMETA(DisplayName = "None"), 
+	W_G36	UMETA(DisplayName = "W_G36"), 
+	W_M4	UMETA(DisplayName = "W_M4")
+};
+
+UENUM(BlueprintType)
+enum class EPowerup: uint8
+{
+	None		UMETA(DisplayName = "None"), 
+	P_Health	UMETA(DisplayName = "P_Health")
+};
 
 UCLASS()
 class TPSTUTORIAL_API APickupActor : public AActor
@@ -24,7 +49,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void SpawnPowerup();
+	UPROPERTY(BlueprintReadOnly)
+	ATpsCharacter* Player;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* SphereComp;
@@ -32,22 +58,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UDecalComponent* DecalComp;
 
-	// The power up actor to spawn
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Properties")
-	TSubclassOf<APowerupActor> PowerupClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* MeshComp;
 
-	// The spawned powerup actor instance
-	APowerupActor* PowerupInstance;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
+	EPickupType PickupType;
 
-	// The cooldown time after spawning a new powerup
-	UPROPERTY(EditDefaultsOnly, Category = "Properties")
-	float CooldownTime;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
+	EWeapon WeaponName;
 
-	FTimerHandle TimerHandle_SpawnPowerup;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
+	EPowerup PowerupName;
 
 public:	
 
 	// Called when overlapping with other actors (overriding from Actor.h)
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	// virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	
 };
