@@ -36,6 +36,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
 	TArray<AActor*> PatrolWayPoints;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool FoundPlayer;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

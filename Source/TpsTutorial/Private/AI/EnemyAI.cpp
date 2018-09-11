@@ -6,6 +6,7 @@
 
 // Sets default values
 AEnemyAI::AEnemyAI()
+	:FoundPlayer(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -40,8 +41,8 @@ void AEnemyAI::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemyAI::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	// Log current health
-	UE_LOG(LogTemp, Warning, TEXT("Current health: %f"), CurrentHealth);
+	// Set found player
+	FoundPlayer = true;
 
 	if (CurrentHealth <= 0.f)
 	{
