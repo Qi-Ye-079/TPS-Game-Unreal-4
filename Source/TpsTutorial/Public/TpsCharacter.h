@@ -60,7 +60,7 @@ protected:
 	void SwapWeapon();
 
 	// Helper function: Do single line trace by channel, determine end location, and fire weapon
-	bool LineTraceFromCameraByChannel(FHitResult& HitResult, FVector& EndLocation, ECollisionChannel TraceChannel);
+	bool LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisionChannel TraceChannel);
 
 	// Helper function: Spawn the weapon at the right socket
 	void SpawnWeapon();
@@ -120,6 +120,10 @@ protected:
 	// The default FOV
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
 	float DefaultFov;
+
+	// The rotation when aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
+	float AimRotation;
 
 	// Whether the character is dead or not
 	UPROPERTY(BlueprintReadOnly, Category = "Status")

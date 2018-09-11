@@ -14,7 +14,7 @@ class UDamageType;
 class ATpsProjectile;
 
 // Enum to define the weapon typs
-UENUM()
+UENUM(BlueprintType)
 enum class EWeaponType: uint8
 {
 	EWT_Pistol,	EWT_Rifle 
@@ -98,7 +98,7 @@ public:
 
 	// The fire function of this weapon
 	UFUNCTION(BlueprintCallable)
-	virtual void Fire(const FVector& EndLocation);
+	virtual void Fire(const FHitResult& HitResult);
 
 	// Return if this weapon is automatic or not
 	bool IsAutomatic() const;

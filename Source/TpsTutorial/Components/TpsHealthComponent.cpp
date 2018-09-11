@@ -5,13 +5,11 @@
 
 // Sets default values for this component's properties
 UTpsHealthComponent::UTpsHealthComponent()
+	:MaxHealth(100.f)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;  // Not ticking
-
-	// Set 2 health variables
-	CurrentHealth = MaxHealth = 100.f;
 }
 
 
@@ -20,10 +18,12 @@ void UTpsHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Get the owner
-	AActor *Owner = GetOwner();
-	if (Owner)
-		Owner->OnTakeAnyDamage.AddDynamic(this, &UTpsHealthComponent::UpdateHealthOnDamage);
+	// Set the current health as the max health
+	CurrentHealth = MaxHealth;
+
+	// Subscribe to the On Take Any Damage event of the owner
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UTpsHealthComponent::UpdateHealthOnDamage);
+
 	
 }
 
@@ -52,17 +52,13 @@ void UTpsHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
-void UTpsHealthComponent::Heal(float HealAmount)
+
+void UTpsHealthComponent::UpdateCurrentHealth(float DeltaHealth)
 {
-	if (HealAmount <= 0 || CurrentHealth >= MaxHealth || CurrentHealth <= 0.f)
+	if (DeltaHealth == 0 || CurrentHealth >= MaxHealth || CurrentHealth <= 0.f)
 		return;
 
 	// Heal the owner
-	CurrentHealth = FMath::Clamp(CurrentHealth + HealAmount, 0.f, MaxHealth);
-}
-
-float UTpsHealthComponent::GetCurrentHealth() const
-{
-	return CurrentHealth;
+	CurrentHealth = FMath::Clamp(CurrentHealth + DeltaHealth, 0.f, MaxHealth);
 }
 

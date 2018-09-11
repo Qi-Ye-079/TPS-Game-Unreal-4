@@ -3,6 +3,8 @@
 #include "TpsProjectile.h"
 #include "Gameframework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 
 
 // Sets default values
@@ -11,14 +13,10 @@ ATpsProjectile::ATpsProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Make the static mesh block the Pawn only
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	MeshComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	RootComponent = MeshComp;
-
 	ProjectileMoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMoveComp"));
 	ProjectileMoveComp->bAutoActivate = false;
+
+
 
 }
 

@@ -13,12 +13,13 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "TpsProjectile.h"
+#include "TpsCharacter.h"
 
 // Sets default values
 ATpsWeapon::ATpsWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 
 }
@@ -45,7 +46,7 @@ void ATpsWeapon::Tick(float DeltaTime)
 }
 
 
-void ATpsWeapon::Fire(const FVector& EndLocation)
+void ATpsWeapon::Fire(const FHitResult& HitResult)
 {
 	// If no mesh: simply return
 	if (!MeshComp)
@@ -54,19 +55,15 @@ void ATpsWeapon::Fire(const FVector& EndLocation)
 		return;
 	}
 
-	// 1. Get muzzle location and EndPoint; draw a debug line to help visualize the tracing line
+	// 1. Get muzzle location and EndPoint and draw a debug line to help visualize the tracing line
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-
-	// UE_LOG(LogTemp, Error, TEXT("Muzzle socket location: %s"), *MuzzleLocation.ToString());
-	// FVector EndPoint = bHit ? HitRes.ImpactPoint : EndLocation;
+	FVector EndLocation = HitResult.bBlockingHit ? HitResult.ImpactPoint : HitResult.TraceEnd;
 	DrawDebugLine(GetWorld(), MuzzleLocation, EndLocation, FColor::Red, false, 1.f, 0, 1.f);
 
-	// 2. Get the rotation of launching projectile
-	FVector LaunchDirection = (EndLocation - MuzzleLocation).GetSafeNormal();
-
+	/*
 	// 3. Spawn and launch projectile
 	FActorSpawnParameters ProjectileSpawnParams;
-	ProjectileSpawnParams.Instigator = Instigator;
+	ProjectileSpawnParams.Instigator = Cast<ATpsCharacter>(GetOwner());
 	ProjectileSpawnParams.Owner = this;
 	ProjectileSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	ATpsProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ATpsProjectile>(ProjectileClass, MuzzleLocation, LaunchDirection.Rotation(), ProjectileSpawnParams);
@@ -74,15 +71,26 @@ void ATpsWeapon::Fire(const FVector& EndLocation)
 	{
 		SpawnedProjectile->Launch(InitialBulletSpeed);
 	}
+	*/
+
+	// 2. Apply damage to the hit point if the "ray" is blocked (instead of being overlapped or ignored)
+	FVector HitFromDirection = (EndLocation - MuzzleLocation).GetSafeNormal();
+	if (HitResult.bBlockingHit)
+	{
+		UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), BaseDamage, HitFromDirection, HitResult, GetInstigatorController(), this, nullptr);
+		//UE_LOG(LogTemp, Error, TEXT("Hit actor: %s by %f"), *HitResult.GetActor()->GetName(), damage);
+	}
 
 	// 4. Apply particle effect on the muzzle
 	if (MuzzleEffect)
+	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, TEXT("MuzzleFlashSocket"));
+	}
 
 	// 5. Apply smoke effect
 	if (TracerEffect)
 	{
-		UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerEffect, MuzzleLocation);
+		UParticleSystemComponent* TracerBeam = UGameplayStatics::SpawnEmitterAtLocation(this, TracerEffect, MuzzleLocation);
 		if (TracerBeam)
 		{
 			//const FVector& EndPoint = IsHit ? HitRes.ImpactPoint : EndLocation;

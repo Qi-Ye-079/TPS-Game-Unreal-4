@@ -22,6 +22,7 @@ ATpsCharacter::ATpsCharacter()
 	,DefaultFov(70.f)
 	,bDead(false)
 	,CurrentWeaponID(EWeaponID::None)
+	,AimRotation(5.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -57,6 +58,7 @@ ATpsCharacter::ATpsCharacter()
 	// Make the Capsule component ignore the Weapon Collision trace channel
 	// since we only want the Mesh Component to respond to that channel
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->ComponentTags.Add(TEXT("Player"));
 
 	// Auto posses player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -131,7 +133,7 @@ void ATpsCharacter::ZoomIn()
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed *= 0.35f;
-	GetMesh()->AddLocalRotation(FRotator(0.f, 5.f, 0.f));
+	GetMesh()->AddLocalRotation(FRotator(0.f, AimRotation, 0.f));
 	EquippedWeapons[CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Rifle_Aiming"));
 
 	// Use timeline to zoom in camera in BP
@@ -146,7 +148,7 @@ void ATpsCharacter::ZoomOut()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed *= (1.f / 0.35f);
-	GetMesh()->AddLocalRotation(FRotator(0.f, -5.f, 0.f));
+	GetMesh()->AddLocalRotation(FRotator(0.f, -AimRotation, 0.f));
 	EquippedWeapons[CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponSocket_Idle"));
 
 	// Use timeline to zoom out camera in BP
@@ -186,10 +188,9 @@ void ATpsCharacter::Fire()
 		return;
 
 	// Do single line tracing by Weapon channel and fire weapon ========
-	FVector TraceEndLocation;
 	FHitResult HitResult;
-	bool bHit = LineTraceFromCameraByChannel(HitResult, TraceEndLocation, ECollisionChannel::COLLISION_WEAPON);
-	bHit? EquippedWeapons[CurrentWeaponID]->Fire(HitResult.ImpactPoint) : EquippedWeapons[CurrentWeaponID]->Fire(TraceEndLocation);
+	LineTraceFromCameraByChannel(HitResult, ECollisionChannel::COLLISION_WEAPON);
+	EquippedWeapons[CurrentWeaponID]->Fire(HitResult);
 
 	// Crucial: update the time of last shot for proper automatic fire
 	LastFireTime = GetWorld()->TimeSeconds;
@@ -223,7 +224,7 @@ void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, fl
 	Helper functions
  */
  // Helper function: Do single line trace by channel, determine end location, and fire weapon
-bool ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, FVector& EndLocation, ECollisionChannel TraceChannel)
+bool ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisionChannel TraceChannel)
 {
 	// Get the location and rotation of from camera's view
 	FVector CamLocation;
@@ -231,7 +232,7 @@ bool ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, FVector&
 	CameraComp->GetSocketWorldLocationAndRotation(USpringArmComponent::SocketName, CamLocation, CamRotation);
 
 	// Get the end location of tracing line with a large distance
-	EndLocation = CamLocation + CamRotation.Vector() * 50000.f;
+	FVector EndLocation = CamLocation + CamRotation.Vector() * 5000000.f;
 
 	// Better to specify the Collision Query Parameters as well
 	// For a precise hit point; more costly but looks way more natural

@@ -7,6 +7,8 @@
 #include "TpsProjectile.generated.h"
 
 class USphereComponent;
+class UStaticMeshComponent;
+class USceneComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
@@ -21,10 +23,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// The static mesh component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* MeshComp;
 
 	// Handles the movement of this projectile
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
