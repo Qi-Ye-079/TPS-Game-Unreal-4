@@ -39,6 +39,12 @@ void AEnemyAI::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 }
 
 
+TArray<AActor*>& AEnemyAI::GetPatrolWaypoints()
+{
+	return PatrolWayPoints;
+}
+
+
 void AEnemyAI::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// Set found player

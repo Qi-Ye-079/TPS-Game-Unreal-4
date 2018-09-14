@@ -38,7 +38,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Shoot weapon function; will be looping if the current weapon is automatic
-	UFUNCTION(BlueprintCallable)
 	void Fire();
 
 	// dynamic delegate function on health changed
@@ -46,30 +45,37 @@ protected:
 	void HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, float CurrentHealth, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	// Create the crosshair widget in BP
-	UFUNCTION(BlueprintImplementableEvent, Category = BlueprintEvents)
+	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
 	void CreateCrosshairWidgetEvent();
 
-	UFUNCTION(BlueprintCallable)
-	void SwapWeaponAction();
+	// The event when starting zooming in camera. To be implemented in BP.
+	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
+	void ZoomInCamera();
+
+	// The event when starting zooming out camera. To be implemented in BP.
+	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
+	void ZoomOutCamera();
+
+	// The event to be fired when the anim montage of swapping weapon notifies
+	UFUNCTION(BlueprintCallable, Category = "Functions")
+	void OnNotifySwapWeapon();
 
 	// Bind axis and action inputs
+	void LookUp(float AxisValue);
+	void LookRight(float AxisValue);
 	void StartShoot();
 	void EndShoot();
 	void ZoomIn();
 	void ZoomOut();
+	void StartRun();
+	void EndRun();
 	void SwapWeapon();
 
 	// Helper function: Do single line trace by channel, determine end location, and fire weapon
-	bool LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisionChannel TraceChannel);
+	void LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisionChannel TraceChannel);
 
 	// Helper function: Spawn the weapon at the right socket
 	void SpawnWeapon();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
-	void ZoomInCamera();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintEvents")
-	void ZoomOutCamera();
 
 	// ================ VARIABLES ================
 	// Main camera component
@@ -109,19 +115,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Camera Zoom")
 	bool bAiming;
 
-	// The zooming speed
+	// Set the scale of speed of looking around when aiming.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomSpeed;
+	float AimLookScale;
 
 	// The FOV after zoom in
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float ZoomInFov;
+	float ZoomInArmLength;
 
 	// The default FOV
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
-	float DefaultFov;
+	float DefaultArmLength;
 
-	// The rotation when aiming
+	// The local rotation of this character when aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera Zoom")
 	float AimRotation;
 
@@ -129,14 +135,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Status")
 	bool bDead;
 
+	// Whether the player is zooming in
+	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	bool bRunning;
+
+	// The actor to interact
+	UPROPERTY(BlueprintReadWrite, Category = "Interaction")
+	AActor* InteractActor;
+
 	// The timer handler for shooting weapon
 	FTimerHandle TimerHandle;
 
 	// The last fire time
 	float LastFireTime;
-
-	// The percentage of zooming (0 by default)
-	float ZoomAlpha;
 
 public:	
 	// Called every frame

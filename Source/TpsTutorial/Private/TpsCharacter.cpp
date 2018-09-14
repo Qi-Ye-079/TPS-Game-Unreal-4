@@ -17,10 +17,11 @@
 ATpsCharacter::ATpsCharacter()
 	// Initializer list with default values
 	:bAiming(false)
-	,ZoomSpeed(5.f)
-	,ZoomInFov(30.f)
-	,DefaultFov(70.f)
+	,AimLookScale(0.2f)
+	,ZoomInArmLength(80.f)
+	,DefaultArmLength(250.f)
 	,bDead(false)
+	,bRunning(false)
 	,CurrentWeaponID(EWeaponID::None)
 	,AimRotation(5.f)
 {
@@ -41,7 +42,7 @@ ATpsCharacter::ATpsCharacter()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);           // Must-have
 	SpringArmComp->bUsePawnControlRotation = true;           // Must-have
-	SpringArmComp->TargetArmLength = 300.f;                  // length of the spring arm
+	SpringArmComp->TargetArmLength = DefaultArmLength;       // length of the spring arm
 	SpringArmComp->SocketOffset = FVector(0.f, 60.f, 80.f);  // Offset at the end of spring arm(socket)
 	SpringArmComp->bEnableCameraLag = true;
 	SpringArmComp->CameraLagSpeed = 10.f;
@@ -49,7 +50,6 @@ ATpsCharacter::ATpsCharacter()
 	// Create a UCameraComponent for this player.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
-	CameraComp->SetFieldOfView(DefaultFov);
 
 	// Subscribe to the On Health Changed event in health component
 	HealthComp = CreateDefaultSubobject<UTpsHealthComponent>(TEXT("HealthComp"));
@@ -93,15 +93,29 @@ void ATpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	//PlayerInputComponent->BindAxis("MoveRight", this, &ATpsCharacter::MoveRight);
 
 	// Bind camera input
-	PlayerInputComponent->BindAxis("Lookup", this, &ATpsCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Turn", this, &ATpsCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Lookup", this, &ATpsCharacter::LookUp);
+	PlayerInputComponent->BindAxis("Turn", this, &ATpsCharacter::LookRight);
 
-	// Bind actions(NOTE: cannot directly use Crouch() and UnCrouch() function here. Why??)
+	// Bind actions
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATpsCharacter::StartShoot);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATpsCharacter::EndShoot);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATpsCharacter::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATpsCharacter::ZoomOut);
+	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &ATpsCharacter::StartRun);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &ATpsCharacter::EndRun);
 	PlayerInputComponent->BindAction("Swap", IE_Pressed, this, &ATpsCharacter::SwapWeapon);
+}
+
+
+void ATpsCharacter::LookUp(float AxisValue)
+{
+	bAiming? AddControllerPitchInput(AxisValue * AimLookScale) : AddControllerPitchInput(AxisValue);
+}
+
+
+void ATpsCharacter::LookRight(float AxisValue)
+{
+	bAiming? AddControllerYawInput(AxisValue * AimLookScale) : AddControllerYawInput(AxisValue);
 }
 
 // Set timer and start shooting
@@ -156,6 +170,18 @@ void ATpsCharacter::ZoomOut()
 }
 
 
+void ATpsCharacter::StartRun()
+{
+	bRunning = true;
+}
+
+
+void ATpsCharacter::EndRun()
+{
+	bRunning = false;
+}
+
+
 void ATpsCharacter::SwapWeapon()
 {
 	if (EquippedWeapons.Num() < 2) return;
@@ -168,7 +194,7 @@ void ATpsCharacter::SwapWeapon()
 }
 
 
-void ATpsCharacter::SwapWeaponAction()
+void ATpsCharacter::OnNotifySwapWeapon()
 {
 	// Attach the equipped weapon to the right back
 	EquippedWeapons[CurrentWeaponID]->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("Weapon_Holster_Right"));
@@ -224,7 +250,7 @@ void ATpsCharacter::HandleHealthUpdate(UTpsHealthComponent* OwningHealthComp, fl
 	Helper functions
  */
  // Helper function: Do single line trace by channel, determine end location, and fire weapon
-bool ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisionChannel TraceChannel)
+void ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisionChannel TraceChannel)
 {
 	// Get the location and rotation of from camera's view
 	FVector CamLocation;
@@ -244,7 +270,7 @@ bool ATpsCharacter::LineTraceFromCameraByChannel(FHitResult& HitResult, ECollisi
 
 	// Do line tracing by channel (ECC_Visibility: hit anything visible that blocks the line
 	// Note that the hit actor's collision should be enabled, especially the traced channel
-	return GetWorld()->LineTraceSingleByChannel(HitResult, CamLocation, EndLocation, TraceChannel, QueryParams);
+	GetWorld()->LineTraceSingleByChannel(HitResult, CamLocation, EndLocation, TraceChannel, QueryParams);
 }
 
 // Spawn the weapon at the right socket
