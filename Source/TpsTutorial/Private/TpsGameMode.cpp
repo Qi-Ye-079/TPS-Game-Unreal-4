@@ -2,6 +2,7 @@
 
 #include "TpsGameMode.h"
 #include "TimerManager.h"
+#include "TpsGameState.h"
 #include "Components/TpsHealthComponent.h"
 
 
@@ -11,6 +12,9 @@ ATpsGameMode::ATpsGameMode()
 	// Make this mode class tick every 1 second
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.f;
+
+	// Set up game state class
+	GameStateClass = ATpsGameState::StaticClass();
 }
 
 
@@ -40,6 +44,9 @@ void ATpsGameMode::StartWave()
 
 	// Set the timer to spawn bots periodically
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ATpsGameMode::SpawnBotTimerElapsed, 1.f, true, 0.f);
+
+	// Set the wave state to Wave in progress
+	SetWaveState(EWaveState::WaveInProgress);
 }
 
 
@@ -60,6 +67,9 @@ void ATpsGameMode::EndWave()
 {
 	// Clear the spawn bots timer
 	GetWorldTimerManager().ClearTimer(TimerHandle_SpawnBots);
+
+	// Set the wave state to waiting to complete
+	SetWaveState(EWaveState::WaitingToComplete);
 }
 
 
@@ -67,6 +77,9 @@ void ATpsGameMode::PrepareForNextWave()
 {
 	// Simply set timer to start next wave
 	GetWorldTimerManager().SetTimer(TimerHandle_PrepareWave, this, &ATpsGameMode::StartWave, TimeBetweenWaves, false);
+
+	// Set the wave state to Wave in progress
+	SetWaveState(EWaveState::WaitingToStart);
 }
 
 
@@ -102,6 +115,8 @@ void ATpsGameMode::CheckWaveState()
 	// if no bot is alive: prepare for the next wave
 	if (!bAnyBotAlive)
 	{
+		SetWaveState(EWaveState::WaveComplete);
+
 		PrepareForNextWave();
 	}
 
@@ -136,5 +151,18 @@ void ATpsGameMode::GameOver()
 
 	// @TODO: end the game and present "game over" to the player
 
+	SetWaveState(EWaveState::GameOver);
+
 	UE_LOG(LogTemp, Log, TEXT("GAME OVER!!"));
 }
+
+
+void ATpsGameMode::SetWaveState(EWaveState NewState)
+{
+	ATpsGameState* GS = GetGameState<ATpsGameState>();
+	if (ensureAlways(GS))
+	{
+		GS->SetWaveState(NewState);
+	}
+}
+

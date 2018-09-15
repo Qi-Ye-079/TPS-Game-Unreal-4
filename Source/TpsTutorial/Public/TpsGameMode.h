@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "TpsGameMode.generated.h"
 
+enum class EWaveState : uint8;
+
 /**
  * 
  */
@@ -43,6 +45,9 @@ protected:
 
 	// When no player is alive
 	void GameOver();
+
+	// Set the wave's state
+	void SetWaveState(EWaveState NewState);
 
 	// The timer handle to spawning new bots
 	FTimerHandle TimerHandle_SpawnBots;
