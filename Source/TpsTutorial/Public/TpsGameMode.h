@@ -38,6 +38,12 @@ protected:
 	// Check the spawned bots status
 	void CheckWaveState();
 
+	// Function to check if any player is still alive
+	void CheckPlayerState();
+
+	// When no player is alive
+	void GameOver();
+
 	// The timer handle to spawning new bots
 	FTimerHandle TimerHandle_SpawnBots;
 
@@ -60,5 +66,6 @@ public:
 
 	// Called at specified interval
 	virtual void Tick(float DeltaSeconds) override;
-	
+
+
 };

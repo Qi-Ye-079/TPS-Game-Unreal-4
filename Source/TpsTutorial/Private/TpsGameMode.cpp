@@ -27,8 +27,9 @@ void ATpsGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// Check wave status
+	// Check wave and player status
 	CheckWaveState();
+	CheckPlayerState();
 }
 
 
@@ -106,3 +107,34 @@ void ATpsGameMode::CheckWaveState()
 
 }
 
+
+void ATpsGameMode::CheckPlayerState()
+{
+	for (FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
+	{
+		APlayerController* PC = it->Get();
+		if (PC && PC->GetPawn())
+		{
+			// Get player pawn and the health component to see if it's still alive
+			APawn* PlayerPawn = PC->GetPawn();
+			UTpsHealthComponent* PawnHealthComp = Cast<UTpsHealthComponent>(PlayerPawn->GetComponentByClass(UTpsHealthComponent::StaticClass()));
+			if (ensure(PawnHealthComp) && PawnHealthComp->GetCurrentHealth() > 0.f)
+			{
+				return;
+			}
+		}	
+	}
+
+	// If no player is alive: game over
+	GameOver();
+}
+
+
+void ATpsGameMode::GameOver()
+{
+	EndWave();
+
+	// @TODO: end the game and present "game over" to the player
+
+	UE_LOG(LogTemp, Log, TEXT("GAME OVER!!"));
+}
