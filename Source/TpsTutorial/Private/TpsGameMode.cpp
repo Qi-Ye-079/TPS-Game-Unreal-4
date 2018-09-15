@@ -3,6 +3,7 @@
 #include "TpsGameMode.h"
 #include "TimerManager.h"
 #include "TpsGameState.h"
+#include "TpsPlayerState.h"
 #include "Components/TpsHealthComponent.h"
 
 
@@ -15,12 +16,16 @@ ATpsGameMode::ATpsGameMode()
 
 	// Set up game state class
 	GameStateClass = ATpsGameState::StaticClass();
+	PlayerStateClass = ATpsPlayerState::StaticClass();
 }
 
 
 void ATpsGameMode::StartPlay()
 {
 	Super::StartPlay();
+
+	// Bind the On Actor Killed event
+	// OnActorKilled.AddDynamic(this, &ATpsGameMode::HandleActorKilled);
 
 	// Prepare for a wave
 	PrepareForNextWave();

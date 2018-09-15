@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TpsHealthComponent.h"
+#include "TpsGameMode.h"
 
 
 // Sets default values for this component's properties
@@ -42,6 +43,16 @@ void UTpsHealthComponent::UpdateHealthOnDamage(AActor* DamagedActor, float Damag
 
 	// Implement the FOnHealthChangedSignature event by Broadcasting the delegate
 	OnHealthChanged.Broadcast(this, CurrentHealth, Damage, DamageType, InstigatedBy, DamageCauser);
+
+	// When dead: broadcast actor killed event on game mode
+	if (CurrentHealth <= 0.f)
+	{
+		ATpsGameMode* GM = GetWorld()->GetAuthGameMode<ATpsGameMode>();
+		if (GM)
+		{
+			GM->OnActorKilled.Broadcast(GetOwner(), DamageCauser, InstigatedBy);
+		}
+	}
 }
 
 // Called every frame

@@ -8,6 +8,9 @@
 
 enum class EWaveState : uint8;
 
+// The multicast delegate when an actor kills another
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnActorKilledSignature, AActor*, VictimActor, AActor*, KillerActor, AController*, InstigatedBy);
+
 /**
  * 
  */
@@ -49,6 +52,9 @@ protected:
 	// Set the wave's state
 	void SetWaveState(EWaveState NewState);
 
+	// Delegate of on actor killed event
+	// void HandleActorKilled(AActor* VictimActor, AActor* KillerActor);
+
 	// The timer handle to spawning new bots
 	FTimerHandle TimerHandle_SpawnBots;
 
@@ -72,5 +78,6 @@ public:
 	// Called at specified interval
 	virtual void Tick(float DeltaSeconds) override;
 
-
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnActorKilledSignature OnActorKilled;
 };
