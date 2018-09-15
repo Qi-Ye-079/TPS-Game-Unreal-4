@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateCurrentHealth(float DeltaHealth);
 
+	// Get the current health
+	float GetCurrentHealth() const;
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 	

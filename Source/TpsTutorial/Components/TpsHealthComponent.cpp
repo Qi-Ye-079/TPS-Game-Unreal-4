@@ -62,3 +62,9 @@ void UTpsHealthComponent::UpdateCurrentHealth(float DeltaHealth)
 	CurrentHealth = FMath::Clamp(CurrentHealth + DeltaHealth, 0.f, MaxHealth);
 }
 
+
+float UTpsHealthComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+
