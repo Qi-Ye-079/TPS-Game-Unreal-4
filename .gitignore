@@ -14,6 +14,12 @@ Content/Collections/
 Content/Developers/
 Content/ParagonPhase/
 Content/Blueprints/Characters/TrackerBot/SFX
+Content/Animations/
+Content/Weapons-Firearms/
+Content/Environment_Set/
+Content/KiteDemo/
+Content/maps/GamePlayMap_BuiltData.uasset
+Content/maps/NewMap_BuiltData.uasset
 
 # VS generated files
 *.suo
@@ -21,9 +27,3 @@ Content/Blueprints/Characters/TrackerBot/SFX
 *.opendb
 *.user
 *.ipch
-
-Content/Animations/
-Content/Weapons-Firearms/
-Content/Environment_Set/
-Content/KiteDemo/
-Content/maps/GamePlayMap_BuiltData.uasset
